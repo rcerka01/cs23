@@ -1,0 +1,11 @@
+ensime-langserver.log
+pc.stdout.log
+scalavista-vscode.log
+target
+project
+.vscode
+.metals
+.idea
+.ensime_cache
+.bsp
+.bloop
