@@ -3,8 +3,8 @@ package cs.dispatch
 import cs.dispatch.Main.Environment
 import cs.dispatch.config.{AppConfig, Config, ZioHttpConfig}
 import cs.dispatch.servers.HttpServer
-import cs.dispatch.servers.controllers.UpstreamController
-import cs.dispatch.services.UpstreamImitatorService
+import cs.dispatch.servers.controllers.{RecommendationController, UpstreamController}
+import cs.dispatch.services.{RecommendationService, UpstreamImitatorService}
 import zhttp.service.{ChannelFactory, EventLoopGroup, Server}
 import zio.*
 import zio.Console.printLine
@@ -18,7 +18,7 @@ object Main extends ZIOAppDefault {
     def printConfig: ZIO[AppConfig, IOException, Unit] = for
       _ <- ZIO.logInfo("Starting app...")
       config <- ZIO.service[AppConfig]
-      _ <- ZIO.logInfo(config.toString)
+     // _ <- ZIO.logInfo(config.toString)
     yield ()
 
     printConfig
@@ -29,7 +29,9 @@ object Main extends ZIOAppDefault {
         Config.live,
         HttpServer.live,
         UpstreamImitatorService.live,
-        UpstreamController.live
+        UpstreamController.live,
+        RecommendationController.live,
+        RecommendationService.live
       )
   }
 }

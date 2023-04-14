@@ -15,7 +15,7 @@ object SimpleHttpClient {
        host: String, 
        path: String, 
        method: Method, 
-       body: HttpData): ZIO[Env with AppConfig, Throwable, String] =
+       body: HttpData  = HttpData.fromString("")): ZIO[Env with AppConfig, Throwable, String] =
     for {
       res <- Client.request(
         url = s"http://$host:$port$path",
