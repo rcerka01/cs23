@@ -54,15 +54,17 @@ case class RecommendationServiceImpl(appConfig: AppConfig)
 
   def getRecommendations(user: User): ZIO[AppConfig, Throwable, List[Recommendation]] = {
       (for {
-        cardResponse <- callUpstream(appConfig.upstreamResponse.callTypes.head.path)
-        creditCardResponse <- callUpstream(appConfig.upstreamResponse.callTypes.tail.head.path)
+        cardResponseFiber <- callUpstream(appConfig.upstreamResponse.callTypes.head.path).fork
+        creditCardResponseFiber <- callUpstream(appConfig.upstreamResponse.callTypes.tail.head.path).fork
+        zippedResponse = cardResponseFiber.zip(creditCardResponseFiber)
+        response: (String, String) <- zippedResponse.join
 
-        cards <- cardResponse.fromJson[List[CardResponse]] match {
+        cards <- response._1.fromJson[List[CardResponse]] match {
             case Right(data) => ZIO.succeed(data)
             case Left(e) => ZIO.logError(CardResponseError(s"Failed serialize cards, CardResponse: $e").toString) *>
               ZIO.succeed(Nil)
           }
-        creditCards <- creditCardResponse.fromJson[List[CreditCardResponse]] match {
+        creditCards <- response._2.fromJson[List[CreditCardResponse]] match {
           case Right(data) => ZIO.succeed(data)
           case Left(e) => ZIO.logError(CardResponseError(s"Failed serialize credit cards, CreditCardResponse: $e").toString) *>
             ZIO.succeed(Nil)
