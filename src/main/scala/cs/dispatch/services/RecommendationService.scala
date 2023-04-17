@@ -11,8 +11,8 @@ import zio.json.{DeriveJsonDecoder, JsonDecoder}
 import zio.{Console, ZIO, ZLayer}
 import zio.json.*
 
-class CreditCardResponseError(msg: String) extends Exception
-class CardResponseError(msg: String) extends Exception
+class CreditCardResponseError(msg: String) extends Exception(msg)
+class CardResponseError(msg: String) extends Exception(msg)
 
 trait RecommendationService {
   def getRecommendations(user: User): ZIO[AppConfig, Throwable, List[Recommendation]]
@@ -57,10 +57,16 @@ case class RecommendationServiceImpl(appConfig: AppConfig)
         cardResponse <- callUpstream(appConfig.upstreamResponse.callTypes.head.path)
         creditCardResponse <- callUpstream(appConfig.upstreamResponse.callTypes.tail.head.path)
 
-        cards <- ZIO.fromEither(cardResponse.fromJson[List[CardResponse]])
-          .mapError(e => CardResponseError(s"Failed serialize cards, CardResponse: $e"))
-        creditCards <- ZIO.fromEither(creditCardResponse.fromJson[List[CreditCardResponse]])
-          .mapError(e => CreditCardResponseError(s"Failed serialize credit cards, CreditCardResponse: $e"))
+        cards <- cardResponse.fromJson[List[CardResponse]] match {
+            case Right(data) => ZIO.succeed(data)
+            case Left(e) => ZIO.logError(CardResponseError(s"Failed serialize cards, CardResponse: $e").toString) *>
+              ZIO.succeed(Nil)
+          }
+        creditCards <- creditCardResponse.fromJson[List[CreditCardResponse]] match {
+          case Right(data) => ZIO.succeed(data)
+          case Left(e) => ZIO.logError(CardResponseError(s"Failed serialize credit cards, CreditCardResponse: $e").toString) *>
+            ZIO.succeed(Nil)
+        }
 
         recs <- ZIO.succeed(generateRecommendations(cards, creditCards))
       } yield (recs)).provide(Context.live, Config.live)

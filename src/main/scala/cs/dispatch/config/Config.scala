@@ -7,7 +7,7 @@ import zio.config.typesafe.TypesafeConfig
 import zio.{IO, Layer, ZIO}
 import scala.concurrent.duration.{Duration, FiniteDuration}
 
-class ConfigError(msg: String) extends Exception
+class ConfigError(msg: String) extends Exception(msg)
 
 val zioHttpConfigDescriptor = descriptor[ZioHttpConfig].mapKey(toKebabCase)
 val upstreamResponseDescriptor = descriptor[UpstreamResponse].mapKey(toKebabCase)
