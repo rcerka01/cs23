@@ -4,7 +4,7 @@ import cs.dispatch.Context.Env
 import cs.dispatch.clients.SimpleHttpClient
 import cs.dispatch.{Context, config}
 import cs.dispatch.config.{AppConfig, Config, ConfigError}
-import cs.dispatch.domain.{CardResponse, CardResponseError, CreditCardResponse, CreditCardResponseError, Recommendation, User}
+import cs.dispatch.domain.{CSCardResponse, CSCardResponseError, Recommendation, ScoredCardResponse, ScoredCardResponseError, User}
 import zhttp.http.{Method, Response}
 import zio.Console.printLine
 import zio.json.{DeriveJsonDecoder, JsonDecoder}
@@ -37,19 +37,19 @@ case class RecommendationServiceImpl(appConfig: AppConfig)
   }
   
   private def generateRecommendations(
-     cards: List[CardResponse] = Nil,
-     creditCards: List[CreditCardResponse] = Nil): List[Recommendation] = {
+                                       cscCardsards: List[CSCardResponse] = Nil,
+                                       scoredCardsCards: List[ScoredCardResponse] = Nil): List[Recommendation] = {
 
-    val  cardRecommendations = cards.map(card => {
+    val  cscCardRecommendations = cscCardsards.map(card => {
       val score = getScore(card.apr, card.eligibility, 0.1)
       Recommendation(appConfig.upstreamResponse.callTypes.head.providerName, card.cardName, card.apr, score)
     })
-    val  creditCardRecommendations = creditCards.map(creditCard => {
+    val  creditCardRecommendations = scoredCardsCards.map(creditCard => {
       val score = getScore(creditCard.apr, creditCard.approvalRating, 0.01)
       Recommendation(appConfig.upstreamResponse.callTypes.tail.head.providerName, creditCard.card, creditCard.apr, score)
     })
 
-    (cardRecommendations ++ creditCardRecommendations).sortBy(_.cardScore).reverse
+    (cscCardRecommendations ++ creditCardRecommendations).sortBy(_.cardScore).reverse
   }
 
   def getRecommendations(user: User): ZIO[AppConfig, Throwable, List[Recommendation]] = {
@@ -60,34 +60,34 @@ case class RecommendationServiceImpl(appConfig: AppConfig)
         zippedResponse = cardResponseFiber.zip(creditCardResponseFiber)
         response: (String, String) <- zippedResponse.join
 
-        cards: List[CardResponse] <- response._1.fromJson[List[CardResponse]] match {
+        cscCards: List[CSCardResponse] <- response._1.fromJson[List[CSCardResponse]] match {
             case Right(data) => ZIO.succeed(data)
-            case Left(e) => ZIO.logError(CardResponseError(s"Failed serialize cards, CardResponse: $e").toString) *>
+            case Left(e) => ZIO.logError(CSCardResponseError(s"Failed serialize CSC Cards, CSCardResponse: $e").toString) *>
               ZIO.succeed(Nil)
           }
 
-        creditCards <- response._2.fromJson[List[CreditCardResponse]] match {
+        scoredCards <- response._2.fromJson[List[ScoredCardResponse]] match {
           case Right(data) => ZIO.succeed(data)
-          case Left(e) => ZIO.logError(CreditCardResponseError(s"Failed serialize credit cards, CreditCardResponse: $e").toString) *>
+          case Left(e) => ZIO.logError(ScoredCardResponseError(s"Failed serialize Scored Cards, ScoredCardResponse: $e").toString) *>
             ZIO.succeed(Nil)
         }
 
         // nice, but not needed here. If one fails, all list fails.
         // validatedCardsTraverse: Validated[NonEmptyList[CardResponseError], List[CardResponse]] = cards.traverse(CardResponse.validate)
 
-        validatedCardsWithExceptions: List[Validated[NonEmptyList[CardResponseError], CardResponse]] = cards.map(CardResponse.validate)
-        invalidCards = validatedCardsWithExceptions.filter(_.isInvalid)
-        _ <- if (invalidCards.nonEmpty) ZIO.logError(s"Invalid card items: $invalidCards")
-             else ZIO.logInfo("Call to Card upstream without errors. All items validated")
-        validatedCards: List[CardResponse] = validatedCardsWithExceptions.flatMap(_.toList)
+        validatedCSCardsWithExceptions: List[Validated[NonEmptyList[CSCardResponseError], CSCardResponse]] = cscCards.map(CSCardResponse.validate)
+        invalidCSCards = validatedCSCardsWithExceptions.filter(_.isInvalid)
+        _ <- if (invalidCSCards.nonEmpty) ZIO.logError(s"Invalid CSC Card items: $invalidCSCards")
+             else ZIO.logInfo("Call to CSC Card upstream without errors. All items validated")
+        validatedCSCards: List[CSCardResponse] = validatedCSCardsWithExceptions.flatMap(_.toList)
 
-        validatedCreditCardsWithExceptions: List[Validated[NonEmptyList[CreditCardResponseError], CreditCardResponse]] = creditCards.map(CreditCardResponse.validate)
-        invalidCreditCards = validatedCreditCardsWithExceptions.filter(_.isInvalid)
-        _ <- if (invalidCreditCards.nonEmpty) ZIO.logError(s"Invalid credit card items: $invalidCreditCards")
-             else ZIO.logInfo("Call to Credit Card upstream without errors. All items validated")
-        validatedCreditCards: List[CreditCardResponse] = validatedCreditCardsWithExceptions.flatMap(_.toList)
+        validatedScoredCardsWithExceptions: List[Validated[NonEmptyList[ScoredCardResponseError], ScoredCardResponse]] = scoredCards.map(ScoredCardResponse.validate)
+        invalidScoredCards = validatedScoredCardsWithExceptions.filter(_.isInvalid)
+        _ <- if (invalidScoredCards.nonEmpty) ZIO.logError(s"Invalid Scored Card items: $invalidScoredCards")
+             else ZIO.logInfo("Call to Scored Card upstream without errors. All items validated")
+        validatedScoredCards: List[ScoredCardResponse] = validatedScoredCardsWithExceptions.flatMap(_.toList)
 
-        recs <- ZIO.succeed(generateRecommendations(validatedCards, validatedCreditCards))
+        recs <- ZIO.succeed(generateRecommendations(validatedCSCards, validatedScoredCards))
       } yield (recs)).provide(Context.live, Config.live)
   }
 }
