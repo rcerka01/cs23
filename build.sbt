@@ -7,6 +7,7 @@ lazy val root = (project in file("."))
   .settings(
     name := "ClearScore23",
     libraryDependencies ++= Seq(
+      "org.typelevel" %% "cats-core" % "2.9.0",
       "dev.zio" %% "zio" % "2.0.10",
       "dev.zio" %% "zio-streams" % "2.0.10",
       "dev.zio" %% "zio-json" % "0.4.2",

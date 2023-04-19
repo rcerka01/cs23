@@ -2,7 +2,7 @@ package cs.dispatch.domain
 
 import cs.dispatch.config.ConfigError
 import cs.dispatch.servers.controllers.UserResponseError
-import cs.dispatch.services.{CardResponseError, CreditCardResponseError}
+import cs.dispatch.services.{CreditCardResponseError}
 import zhttp.http.HttpError
 
 object HttpErrorResponses {
