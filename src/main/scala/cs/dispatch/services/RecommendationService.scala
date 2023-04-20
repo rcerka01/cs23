@@ -8,11 +8,13 @@ import cs.dispatch.domain.{CSCardResponse, CSCardResponseError, Recommendation, 
 import zhttp.http.{Method, Response}
 import zio.Console.printLine
 import zio.json.{DeriveJsonDecoder, JsonDecoder}
-import zio.{Console, ZIO, ZLayer}
+import zio.{Console, Duration, ZIO, ZLayer}
+import zio.*
 import zio.json.*
 import cats.implicits.*
 import cats.data.*
 import cats.data.Validated.{Invalid, Valid}
+
 
 trait RecommendationService {
   def getRecommendations(user: User): ZIO[AppConfig, Throwable, List[Recommendation]]
@@ -21,10 +23,10 @@ trait RecommendationService {
 case class RecommendationServiceImpl(appConfig: AppConfig)
   extends RecommendationService {
 
-  private def callUpstream(path: String): ZIO[Env with AppConfig, Throwable, String] = {
+  private def callUpstream(path: String, timeout: Duration): ZIO[Env with AppConfig, Throwable, String] = {
     val port = appConfig.zioHttp.port
     val host = appConfig.zioHttp.host
-    SimpleHttpClient.callHttp(port, host, path = path, Method.GET)
+    SimpleHttpClient.callHttp(port, host, path, Method.GET, timeout)
   }
 
   private def getScore(apr: Double, eligibility: Double, eligibilityWeight: Double): Double = {
@@ -37,8 +39,8 @@ case class RecommendationServiceImpl(appConfig: AppConfig)
   }
   
   private def generateRecommendations(
-                                       cscCardsards: List[CSCardResponse] = Nil,
-                                       scoredCardsCards: List[ScoredCardResponse] = Nil): List[Recommendation] = {
+     cscCardsards: List[CSCardResponse] = Nil,
+     scoredCardsCards: List[ScoredCardResponse] = Nil): List[Recommendation] = {
 
     val  cscCardRecommendations = cscCardsards.map(card => {
       val score = getScore(card.apr, card.eligibility, 0.1)
@@ -53,10 +55,17 @@ case class RecommendationServiceImpl(appConfig: AppConfig)
   }
 
   def getRecommendations(user: User): ZIO[AppConfig, Throwable, List[Recommendation]] = {
-      // or with mapN ???
+    val csCardConfig = appConfig.upstreamResponse.callTypes.head
+    val scoredCardConfig = appConfig.upstreamResponse.callTypes.tail.head
+
       (for {
-        cardResponseFiber <- callUpstream(appConfig.upstreamResponse.callTypes.head.path).fork
-        creditCardResponseFiber <- callUpstream(appConfig.upstreamResponse.callTypes.tail.head.path).fork
+        // fibers or better with mapN ???
+        cardResponseFiber <- callUpstream(
+          csCardConfig.path,
+          csCardConfig.timeout).fork
+        creditCardResponseFiber <- callUpstream(
+          scoredCardConfig.path,
+          scoredCardConfig.timeout).fork
         zippedResponse = cardResponseFiber.zip(creditCardResponseFiber)
         response: (String, String) <- zippedResponse.join
 
