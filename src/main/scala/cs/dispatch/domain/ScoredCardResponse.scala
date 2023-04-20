@@ -10,8 +10,8 @@ case class ScoredCardResponse(card: String, apr: Double, approvalRating: Double)
 class ScoredCardResponseError(msg: String) extends Exception(msg)
 
 object ScoredCardResponse {
-  implicit val decoder: JsonDecoder[ScoredCardResponse] = DeriveJsonDecoder.gen[ScoredCardResponse]
-  implicit val encoder: JsonEncoder[ScoredCardResponse] = DeriveJsonEncoder.gen[ScoredCardResponse]
+  given decoder: JsonDecoder[ScoredCardResponse] = DeriveJsonDecoder.gen[ScoredCardResponse]
+  given encoder: JsonEncoder[ScoredCardResponse] = DeriveJsonEncoder.gen[ScoredCardResponse]
 
 
   private def mustHasCorrectApr(apr: Double): Validated[NonEmptyList[ScoredCardResponseError], Double] = {

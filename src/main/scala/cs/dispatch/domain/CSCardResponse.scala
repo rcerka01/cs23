@@ -11,8 +11,8 @@ case class CSCardResponse(apr: Double, cardName: String, eligibility: Double)
 class CSCardResponseError(msg: String) extends Exception(msg)
 
 object CSCardResponse {
-  implicit val decoder: JsonDecoder[CSCardResponse] = DeriveJsonDecoder.gen[CSCardResponse]
-  implicit val encoder: JsonEncoder[CSCardResponse] = DeriveJsonEncoder.gen[CSCardResponse]
+  given decoder: JsonDecoder[CSCardResponse] = DeriveJsonDecoder.gen[CSCardResponse]
+  given encoder: JsonEncoder[CSCardResponse] = DeriveJsonEncoder.gen[CSCardResponse]
 
   private def mustHasCorrectApr(apr: Double): Validated[NonEmptyList[CSCardResponseError], Double] = {
     if (apr < 0) CSCardResponseError(s"CS Card apr value of $apr is smaller than 0. Item eliminated.").invalidNel
