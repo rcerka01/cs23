@@ -10,7 +10,7 @@ import scala.concurrent.duration.{Duration, FiniteDuration}
 class ConfigError(msg: String) extends Exception(msg)
 
 val zioHttpConfigDescriptor = descriptor[ZioHttpConfig].mapKey(toKebabCase)
-val upstreamResponseDescriptor = descriptor[UpstreamResponse].mapKey(toKebabCase)
+val upstreamResponseDescriptor = descriptor[UpstreamResponseConfig].mapKey(toKebabCase)
 val appConfigDescriptor = descriptor[AppConfig].mapKey(toKebabCase)
 
 object Config {

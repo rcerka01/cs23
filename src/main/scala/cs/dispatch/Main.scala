@@ -18,7 +18,7 @@ object Main extends ZIOAppDefault {
     def printConfig: ZIO[AppConfig, IOException, Unit] = for
       _ <- ZIO.logInfo("Starting app...")
       config <- ZIO.service[AppConfig]
-      _ <- ZIO.logInfo(config.toString)
+      //_ <- ZIO.logInfo(config.toString)
     yield ()
 
     printConfig
