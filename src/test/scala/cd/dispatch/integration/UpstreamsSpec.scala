@@ -15,9 +15,9 @@ import zio.test.TestAspect.sequential
 
 object UpstreamsSpec extends ZIOSpecDefault {
 
-  def appZio = for {
+  def serverZio = for {
     upstreamApp <- ZIO.serviceWith[UpstreamController](_.create())
-  } yield upstreamApp
+  } yield Server.start(testPort, upstreamApp).forever
 
   def spec = suite("upstream endpoints")(
     test("should respond on a heart beat") {
@@ -36,17 +36,17 @@ object UpstreamsSpec extends ZIOSpecDefault {
       )
 
       for {
-        app <- appZio
-        server <- Server.start(testPort, app).fork
+        server <- serverZio
+        fiber <- server.fork
         response <- request
         body <- response.bodyAsString
-        _ <- server.interrupt
+        _ <- fiber.interrupt
       } yield  {
         assertTrue(response.headers == expectedResp.headers) &&
         assertTrue(response.status == expectedResp.status) &&
         assertTrue(body == data)
       }
-    } @@ sequential,
+    },
 
     test ("should return CSCards request") {
       val expectedResp = Response(
@@ -56,17 +56,17 @@ object UpstreamsSpec extends ZIOSpecDefault {
       )
 
      for {
-       app <- appZio
-       call <- Server.start(testPort, app).fork
+       server <- serverZio
+       fiber <- server.fork
        response <- Client.request(s"http://$testHost:$testPort/app.clearscore.com/api/global/backend-tech-test/v1/cards")
        body <- response.bodyAsString
-       _ <- call.interrupt
+       _ <- fiber.interrupt
      } yield {
        assertTrue(response.headers == expectedResp.headers) &&
        assertTrue(response.status == expectedResp.status) &&
        assertTrue(body == csCardsResponse.stripMargin)
      }
-    } @@ sequential,
+    },
 
     test("should return Scored Cards request") {
       val expectedResp = Response(
@@ -76,28 +76,28 @@ object UpstreamsSpec extends ZIOSpecDefault {
       )
 
       for {
-        app <- appZio
-        call <- Server.start(testPort, app).fork
+        server <- serverZio
+        fiber <- server.fork
         response <- Client.request(s"http://$testHost:$testPort/app.clearscore.com/api/global/backend-tech-test/v2/creditcards")
         body <- response.bodyAsString
-        _ <- call.interrupt
+        _ <- fiber.interrupt
       } yield {
         assertTrue(response.headers == expectedResp.headers) &&
         assertTrue(response.status == expectedResp.status) &&
         assertTrue(body == scoredCardsResponse.stripMargin)
       }
-    } @@ sequential,
+    },
 
     test("should return status Not Found") {
       for {
-        app <- appZio
-        call <- Server.start(testPort, app).fork
+        server <- serverZio
+        fiber <- server.fork
         response <- Client.request(s"http://$testHost:$testPort/not-exist")
-        _ <- call.interrupt
+        _ <- fiber.interrupt
       } yield {
         assertTrue(response.status == Status.NotFound)
       }
-    } @@ sequential
+    }
   ).provide (
       ZLayer.succeed(appConfig),
       Context.live,
