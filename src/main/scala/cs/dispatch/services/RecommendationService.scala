@@ -15,12 +15,11 @@ import cats.implicits.*
 import cats.data.*
 import cats.data.Validated.{Invalid, Valid}
 
-
 trait RecommendationService {
   def getRecommendations(user: User): ZIO[AppConfig, Throwable, List[Recommendation]]
 }
 
-case class RecommendationServiceImpl(appConfig: AppConfig)
+final case class RecommendationServiceImpl(appConfig: AppConfig)
   extends RecommendationService {
 
   private def callUpstream(path: String, timeout: Duration): ZIO[Env with AppConfig, Throwable, String] = {
@@ -29,7 +28,8 @@ case class RecommendationServiceImpl(appConfig: AppConfig)
     SimpleHttpClient.callHttp(port, host, path, Method.GET, timeout)
   }
 
-  private def getScore(apr: Double, eligibility: Double, eligibilityWeight: Double): Double = {
+  // todo how to make it private
+  def getScore(apr: Double, eligibility: Double, eligibilityWeight: Double): Double = {
     val prob = 1 / apr
     val probSq = prob * prob
     val sc = probSq * eligibility
@@ -38,7 +38,8 @@ case class RecommendationServiceImpl(appConfig: AppConfig)
     rounded
   }
   
-  private def generateRecommendations(
+  // todo private??
+  def generateRecommendations(
      cscCardsards: List[CSCardResponse] = Nil,
      scoredCardsCards: List[ScoredCardResponse] = Nil): List[Recommendation] = {
 
@@ -86,13 +87,13 @@ case class RecommendationServiceImpl(appConfig: AppConfig)
 
         validatedCSCardsWithExceptions: List[Validated[NonEmptyList[CSCardResponseError], CSCardResponse]] = cscCards.map(CSCardResponse.validate)
         invalidCSCards = validatedCSCardsWithExceptions.filter(_.isInvalid)
-        _ <- if (invalidCSCards.nonEmpty) ZIO.logError(s"Invalid CSC Card items: $invalidCSCards")
+        _ <- if   (invalidCSCards.nonEmpty) ZIO.logError(s"Invalid CSC Card items: $invalidCSCards")
              else ZIO.logInfo("Call to CSC Card upstream without errors. All items validated")
         validatedCSCards: List[CSCardResponse] = validatedCSCardsWithExceptions.flatMap(_.toList)
 
         validatedScoredCardsWithExceptions: List[Validated[NonEmptyList[ScoredCardResponseError], ScoredCardResponse]] = scoredCards.map(ScoredCardResponse.validate)
         invalidScoredCards = validatedScoredCardsWithExceptions.filter(_.isInvalid)
-        _ <- if (invalidScoredCards.nonEmpty) ZIO.logError(s"Invalid Scored Card items: $invalidScoredCards")
+        _ <- if   (invalidScoredCards.nonEmpty) ZIO.logError(s"Invalid Scored Card items: $invalidScoredCards")
              else ZIO.logInfo("Call to Scored Card upstream without errors. All items validated")
         validatedScoredCards: List[ScoredCardResponse] = validatedScoredCardsWithExceptions.flatMap(_.toList)
 
