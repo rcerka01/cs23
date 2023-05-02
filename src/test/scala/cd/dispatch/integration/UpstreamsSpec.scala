@@ -11,7 +11,7 @@ import cd.dispatch.util.TestHelper.*
 import cs.dispatch.Context.Env
 import io.netty.util.AsciiString
 import zhttp.service.{Client, Server}
-import zio.test.TestAspect.sequential
+import zio.test.TestAspect.{sequential, timeout}
 
 object UpstreamsSpec extends ZIOSpecDefault {
 
@@ -42,8 +42,8 @@ object UpstreamsSpec extends ZIOSpecDefault {
         body <- response.bodyAsString
         _ <- fiber.interrupt
       } yield  {
-        assertTrue(response.headers == expectedResp.headers) &&
         assertTrue(response.status == expectedResp.status) &&
+        assertTrue(response.headers == expectedResp.headers) &&
         assertTrue(body == data)
       }
     },
@@ -52,7 +52,7 @@ object UpstreamsSpec extends ZIOSpecDefault {
       val expectedResp = Response(
         status = Status.Ok,
         headers = Headers(("content-type", "application/json"),("content-length", "207")),
-        data = HttpData.fromString(csCardsResponse.stripMargin)
+        data = HttpData.fromString(csCardsResponse)
       )
 
      for {
@@ -62,17 +62,17 @@ object UpstreamsSpec extends ZIOSpecDefault {
        body <- response.bodyAsString
        _ <- fiber.interrupt
      } yield {
-       assertTrue(response.headers == expectedResp.headers) &&
        assertTrue(response.status == expectedResp.status) &&
-       assertTrue(body == csCardsResponse.stripMargin)
+       assertTrue(response.headers == expectedResp.headers) &&
+       assertTrue(body == csCardsResponse)
      }
-    },
+    } @@ TestAspect.timeout(3.seconds),
 
     test("should return Scored Cards request") {
       val expectedResp = Response(
         status = Status.Ok,
         headers = Headers(("content-type", "application/json"), ("content-length", "103")),
-        data = HttpData.fromString(scoredCardsResponse.stripMargin)
+        data = HttpData.fromString(scoredCardsResponse)
       )
 
       for {
@@ -82,11 +82,11 @@ object UpstreamsSpec extends ZIOSpecDefault {
         body <- response.bodyAsString
         _ <- fiber.interrupt
       } yield {
-        assertTrue(response.headers == expectedResp.headers) &&
         assertTrue(response.status == expectedResp.status) &&
-        assertTrue(body == scoredCardsResponse.stripMargin)
+        assertTrue(response.headers == expectedResp.headers) &&
+        assertTrue(body == scoredCardsResponse)
       }
-    },
+    } @@ TestAspect.timeout(3.seconds),
 
     test("should return status Not Found") {
       for {
