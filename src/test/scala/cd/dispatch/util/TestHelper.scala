@@ -1,13 +1,18 @@
 package cd.dispatch.util
 
-import cs.dispatch.config.{AppConfig, Call, UpstreamResponseConfig, ZioHttpConfig}
+import cs.dispatch.config.{
+  AppConfig,
+  Call,
+  UpstreamResponseConfig,
+  ZioHttpConfig
+}
 import zhttp.http.{HeaderNames, HeaderValues, Headers}
 import zio.*
 
 object TestHelper {
   val testHost = "127.0.0.1"
   val testPort = 3333
-  
+
   val csCardsResponse =
     """
       |[
@@ -23,7 +28,7 @@ object TestHelper {
       |    }
       |]
       |""".stripMargin
-    
+
   val scoredCardsResponse =
     """
       |[
@@ -98,10 +103,23 @@ object TestHelper {
       |]
       |""".stripMargin
 
-
   val zioHttpConfig: ZioHttpConfig = ZioHttpConfig(testHost, testPort)
-  val call1: Call = Call("cards",       "CSCards",     "/app.clearscore.com/api/global/backend-tech-test/v1/cards",       2.seconds, csCardsResponse)
-  val call2: Call = Call("creditcards", "ScoredCards", "/app.clearscore.com/api/global/backend-tech-test/v2/creditcards", 2.seconds, scoredCardsResponse)
-  val upstreamResponseConfig: UpstreamResponseConfig = UpstreamResponseConfig(List(call1, call2))
+  val call1: Call = Call(
+    "cards",
+    "CSCards",
+    "/app.clearscore.com/api/global/backend-tech-test/v1/cards",
+    2.seconds,
+    csCardsResponse
+  )
+  val call2: Call = Call(
+    "creditcards",
+    "ScoredCards",
+    "/app.clearscore.com/api/global/backend-tech-test/v2/creditcards",
+    2.seconds,
+    scoredCardsResponse
+  )
+  val upstreamResponseConfig: UpstreamResponseConfig = UpstreamResponseConfig(
+    List(call1, call2)
+  )
   val appConfig: AppConfig = AppConfig(zioHttpConfig, upstreamResponseConfig)
 }

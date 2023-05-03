@@ -2,9 +2,21 @@ package cd.dispatch.integration
 
 import cs.dispatch.Context
 import cs.dispatch.config.{AppConfig, Config}
-import cs.dispatch.servers.controllers.{RecommendationController, UpstreamController}
+import cs.dispatch.servers.controllers.{
+  RecommendationController,
+  UpstreamController
+}
 import cs.dispatch.services.{RecommendationService, UpstreamImitatorService}
-import zhttp.http.{HeaderNames, HeaderValues, Headers, HttpData, Method, Request, Response, Status}
+import zhttp.http.{
+  HeaderNames,
+  HeaderValues,
+  Headers,
+  HttpData,
+  Method,
+  Request,
+  Response,
+  Status
+}
 import zio.*
 import zio.test.{TestAspect, TestClock, ZIOSpecDefault, assertTrue}
 import cd.dispatch.util.TestHelper.*
@@ -26,12 +38,15 @@ object UpstreamsSpec extends ZIOSpecDefault {
       val request = Client.request(
         url = s"http://$testHost:$testPort/test",
         method = Method.POST,
-        content = HttpData.fromString(data),
+        content = HttpData.fromString(data)
       )
 
       val expectedResp = Response(
         status = Status.Ok,
-        headers = Headers(("content-type", "application/json"), ("content-length", "13")),
+        headers = Headers(
+          ("content-type", "application/json"),
+          ("content-length", "13")
+        ),
         data = HttpData.fromString(data)
       )
 
@@ -41,44 +56,52 @@ object UpstreamsSpec extends ZIOSpecDefault {
         response <- request
         body <- response.bodyAsString
         _ <- fiber.interrupt
-      } yield  {
+      } yield {
         assertTrue(response.status == expectedResp.status) &&
         assertTrue(response.headers == expectedResp.headers) &&
         assertTrue(body == data)
       }
     },
-
-    test ("should return CSCards request") {
+    test("should return CSCards request") {
       val expectedResp = Response(
         status = Status.Ok,
-        headers = Headers(("content-type", "application/json"),("content-length", "207")),
+        headers = Headers(
+          ("content-type", "application/json"),
+          ("content-length", "207")
+        ),
         data = HttpData.fromString(csCardsResponse)
       )
 
-     for {
-       server <- serverZio
-       fiber <- server.fork
-       response <- Client.request(s"http://$testHost:$testPort/app.clearscore.com/api/global/backend-tech-test/v1/cards")
-       body <- response.bodyAsString
-       _ <- fiber.interrupt
-     } yield {
-       assertTrue(response.status == expectedResp.status) &&
-       assertTrue(response.headers == expectedResp.headers) &&
-       assertTrue(body == csCardsResponse)
-     }
+      for {
+        server <- serverZio
+        fiber <- server.fork
+        response <- Client.request(
+          s"http://$testHost:$testPort/app.clearscore.com/api/global/backend-tech-test/v1/cards"
+        )
+        body <- response.bodyAsString
+        _ <- fiber.interrupt
+      } yield {
+        assertTrue(response.status == expectedResp.status) &&
+        assertTrue(response.headers == expectedResp.headers) &&
+        assertTrue(body == csCardsResponse)
+      }
     } @@ TestAspect.timeout(3.seconds),
-
     test("should return Scored Cards request") {
       val expectedResp = Response(
         status = Status.Ok,
-        headers = Headers(("content-type", "application/json"), ("content-length", "103")),
+        headers = Headers(
+          ("content-type", "application/json"),
+          ("content-length", "103")
+        ),
         data = HttpData.fromString(scoredCardsResponse)
       )
 
       for {
         server <- serverZio
         fiber <- server.fork
-        response <- Client.request(s"http://$testHost:$testPort/app.clearscore.com/api/global/backend-tech-test/v2/creditcards")
+        response <- Client.request(
+          s"http://$testHost:$testPort/app.clearscore.com/api/global/backend-tech-test/v2/creditcards"
+        )
         body <- response.bodyAsString
         _ <- fiber.interrupt
       } yield {
@@ -87,7 +110,6 @@ object UpstreamsSpec extends ZIOSpecDefault {
         assertTrue(body == scoredCardsResponse)
       }
     } @@ TestAspect.timeout(3.seconds),
-
     test("should return status Not Found") {
       for {
         server <- serverZio
@@ -98,11 +120,10 @@ object UpstreamsSpec extends ZIOSpecDefault {
         assertTrue(response.status == Status.NotFound)
       }
     }
-  ).provide (
-      ZLayer.succeed(appConfig),
-      Context.live,
-      UpstreamImitatorService.live,
-      UpstreamController.live,
-      RecommendationService.live
+  ).provide(
+    ZLayer.succeed(appConfig),
+    Context.live,
+    UpstreamImitatorService.live,
+    UpstreamController.live,
   )
 }

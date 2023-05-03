@@ -3,10 +3,19 @@ package cs.dispatch.servers
 import cs.dispatch.Context
 import cs.dispatch.clients.SimpleHttpClient
 import cs.dispatch.config.AppConfig
-import cs.dispatch.servers.controllers.{RecommendationController, UpstreamController}
+import cs.dispatch.servers.controllers.{
+  RecommendationController,
+  UpstreamController
+}
 import zhttp.http.*
 import zhttp.service.server.ServerChannelFactory
-import zhttp.service.{Channel, ChannelFactory, EventLoopGroup, Server, ServerChannelFactory}
+import zhttp.service.{
+  Channel,
+  ChannelFactory,
+  EventLoopGroup,
+  Server,
+  ServerChannelFactory
+}
 import zio.*
 import zio.UIO
 import zio.config.*
@@ -19,9 +28,10 @@ trait HttpServer {
 }
 
 case class HttpServerImpl(
-     appConfig: AppConfig,
-     upstreamController: UpstreamController,
-     recommendationController: RecommendationController) extends HttpServer {
+    appConfig: AppConfig,
+    upstreamController: UpstreamController,
+    recommendationController: RecommendationController
+) extends HttpServer {
   override def create: Task[ExitCode] =
     Server(upstreamController.create() ++ recommendationController.create())
       .withPort(appConfig.zioHttp.port)
@@ -35,6 +45,9 @@ case class HttpServerImpl(
 }
 
 object HttpServer {
-  def live: RLayer[AppConfig & UpstreamController & RecommendationController, HttpServer] =
+  def live: RLayer[
+    AppConfig & UpstreamController & RecommendationController,
+    HttpServer
+  ] =
     ZLayer.fromFunction(HttpServerImpl.apply)
 }

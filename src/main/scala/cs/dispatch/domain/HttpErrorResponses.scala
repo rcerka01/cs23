@@ -11,6 +11,6 @@ object HttpErrorResponses {
 //      case e: CardResponseError => HttpError.BadRequest(e.getMessage)
 //      case e: CreditCardResponseError => HttpError.BadRequest(e.getMessage)
       case e: ConfigError => HttpError.InternalServerError(e.getMessage)
-      case _ => HttpError.InternalServerError("Unknown server error")
+      case _              => HttpError.InternalServerError("Unknown server error")
     }
 }

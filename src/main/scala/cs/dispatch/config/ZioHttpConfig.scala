@@ -1,6 +1,6 @@
 package cs.dispatch.config
 
 final case class ZioHttpConfig(
-  host: String,
-  port: Int
+    host: String,
+    port: Int
 )

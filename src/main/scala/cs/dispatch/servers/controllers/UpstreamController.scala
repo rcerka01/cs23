@@ -16,22 +16,27 @@ trait UpstreamController {
   def create(): HttpApp[Env & UpstreamImitatorService & AppConfig, Throwable]
 }
 
-case class UpstreamControllerImpl(upstreamService: UpstreamImitatorService) extends UpstreamController {
-   private type UpstreamControllerEnv = Env & UpstreamImitatorService & AppConfig
+case class UpstreamControllerImpl(upstreamService: UpstreamImitatorService)
+    extends UpstreamController {
+  private type UpstreamControllerEnv = Env & UpstreamImitatorService & AppConfig
 
-  private val upstreamApp: HttpApp[UpstreamControllerEnv, Throwable]  =
+  private val upstreamApp: HttpApp[UpstreamControllerEnv, Throwable] =
     Http.collectZIO[Request] {
-      case req@Method.POST -> !! / "test" =>
+      case req @ Method.POST -> !! / "test" =>
         req.bodyAsString.map(body => Response.json(body))
-      case req@Method.GET -> !! / "app.clearscore.com" / "api" / "global" / "backend-tech-test" / "v1" / "cards" =>
-        upstreamService.cardImitator(CallType.Cards)
-          .fold(e => Response.fromHttpError(toHttpError(e)), Response.json).delay(1.seconds)
-      case req@Method.GET -> !! / "app.clearscore.com" / "api" / "global" / "backend-tech-test" / "v2" / "creditcards" =>
-        upstreamService.cardImitator(CallType.CreditCards)
-          .fold(e => Response.fromHttpError(toHttpError(e)), Response.json).delay(1.seconds)
+      case req @ Method.GET -> !! / "app.clearscore.com" / "api" / "global" / "backend-tech-test" / "v1" / "cards" =>
+        upstreamService
+          .cardImitator(CallType.Cards)
+          .fold(e => Response.fromHttpError(toHttpError(e)), Response.json)
+          .delay(1.seconds)
+      case req @ Method.GET -> !! / "app.clearscore.com" / "api" / "global" / "backend-tech-test" / "v2" / "creditcards" =>
+        upstreamService
+          .cardImitator(CallType.CreditCards)
+          .fold(e => Response.fromHttpError(toHttpError(e)), Response.json)
+          .delay(1.seconds)
     }
 
-  override def create(): HttpApp[UpstreamControllerEnv, Throwable]  = upstreamApp
+  override def create(): HttpApp[UpstreamControllerEnv, Throwable] = upstreamApp
 }
 object UpstreamController {
   def live: RLayer[UpstreamImitatorService, UpstreamController] =

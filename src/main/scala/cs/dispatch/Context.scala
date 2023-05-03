@@ -7,5 +7,6 @@ import zhttp.service.{ChannelFactory, EventLoopGroup}
 
 object Context {
   type Env = EventLoopGroup & ChannelFactory
-  val live = EventLoopGroup.auto(0) ++ ServerChannelFactory.auto ++ ChannelFactory.auto
+  val live =
+    EventLoopGroup.auto(0) ++ ServerChannelFactory.auto ++ ChannelFactory.auto
 }

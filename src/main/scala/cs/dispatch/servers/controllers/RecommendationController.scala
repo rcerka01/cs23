@@ -24,23 +24,30 @@ trait RecommendationController {
 
 class UserResponseError(msg: String) extends Exception(msg)
 
-case class RecommendationControllerImpl(recommendationService: RecommendationService) extends RecommendationController {
-   private type RecommendationServiceEnv = Env & RecommendationService & AppConfig
+case class RecommendationControllerImpl(
+    recommendationService: RecommendationService
+) extends RecommendationController {
+  private type RecommendationServiceEnv =
+    Env & RecommendationService & AppConfig
 
-  private val recommendationsApp: HttpApp[RecommendationServiceEnv, Throwable]  =
+  private val recommendationsApp: HttpApp[RecommendationServiceEnv, Throwable] =
     Http.collectZIO[Request] {
-      case req@Method.POST -> !! / "creditcards" => {
+      case req @ Method.POST -> !! / "creditcards" => {
         (for {
           body <- req.bodyAsString
-          user <- ZIO.fromEither(body.fromJson[User])
-            .mapError(e => UserResponseError(s"Failed serialize user, UserResponse: $e"))
+          user <- ZIO
+            .fromEither(body.fromJson[User])
+            .mapError(e =>
+              UserResponseError(s"Failed serialize user, UserResponse: $e")
+            )
           data <- recommendationService.getRecommendations(user)
         } yield Response.json(data.toJson))
           .catchAll(e => ZIO.succeed(Response.fromHttpError(toHttpError(e))))
       }
     }
 
-  override def create(): HttpApp[RecommendationServiceEnv, Throwable]  = recommendationsApp
+  override def create(): HttpApp[RecommendationServiceEnv, Throwable] =
+    recommendationsApp
 }
 
 object RecommendationController {

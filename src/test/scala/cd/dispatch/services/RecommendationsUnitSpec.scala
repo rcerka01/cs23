@@ -24,7 +24,7 @@ object RecommendationServiceImplSpec extends ZIOSpecDefault {
 
         assert(result1)(equalTo(0.137)) &&
         assert(result2)(equalTo(0.135)) &&
-        assert(result3)(equalTo(0.212 ))
+        assert(result3)(equalTo(0.212))
       },
       test("generateRecommendations returns sorted recommendations") {
         val recommendationServiceImpl = RecommendationServiceImpl(appConfig)
@@ -41,9 +41,14 @@ object RecommendationServiceImplSpec extends ZIOSpecDefault {
           ScoredCardResponse("card6", 0.15, 0.6)
         )
 
-        val result = recommendationServiceImpl.generateRecommendations(cscCardResponses, scoredCardResponses)
+        val result = recommendationServiceImpl.generateRecommendations(
+          cscCardResponses,
+          scoredCardResponses
+        )
 
-        assert(result.map(_.name))(equalTo(List("card6", "card3", "card4", "card5", "card1", "card2")))
+        assert(result.map(_.name))(
+          equalTo(List("card6", "card3", "card4", "card5", "card1", "card2"))
+        )
       }
     )
 }
