@@ -13,47 +13,41 @@ import io.netty.util.AsciiString
 import zhttp.http.*
 import zhttp.service.{Client, Server}
 import zio.*
-import zio.test.TestAspect.sequential
+import zio.test.TestAspect.{sequential, timeout}
 import zio.test.{TestAspect, TestClock, ZIOSpecDefault, assertTrue}
+import zio.json
 
-object RecommendationsScoredCardsExceptionSpec extends ZIOSpecDefault {
-  val recommendationsTestPort = appConfig.zioHttp.port
-  val recommendationsTestHost = appConfig.zioHttp.host
+object CSCardsTimeoutSpec extends ZIOSpecDefault {
 
-  val scoredCardsRespnseWithNotFoundException =
-    call2.copy(callType = "non-existent")
-  val upstreamResponseConfigWithScoredCardNotFound: UpstreamResponseConfig =
-    UpstreamResponseConfig(List(call1, scoredCardsRespnseWithNotFoundException))
-  val appConfigWithScoredCardsNotFound: AppConfig =
-    appConfig.copy(upstreamResponse =
-      upstreamResponseConfigWithScoredCardNotFound
-    )
+  val upstreamAppZIO: Http[Any, Nothing, Request, Response] =
+    Http.collectZIO[Request] {
+      case Method.GET -> !! / "app.clearscore.com" / "api" / "global" / "backend-tech-test" / "v1" / "cards" =>
+        ZIO.succeed(Response.json(csCardsResponse)).delay(3.seconds)
+      case Method.GET -> !! / "app.clearscore.com" / "api" / "global" / "backend-tech-test" / "v2" / "creditcards" =>
+        ZIO.succeed(Response.json(scoredCardsResponse))
+    }
 
-  def serverZio = for {
-    upstreamApp <- ZIO.serviceWith[UpstreamController](_.create())
+  def appZio = for {
     recommendationApp <- ZIO.serviceWith[RecommendationController](_.create())
-  } yield Server.start(
-    recommendationsTestPort,
-    upstreamApp ++ recommendationApp
-  )
+  } yield upstreamAppZIO ++ recommendationApp
 
-  def spec = suite("recommendations endpoint with Scored Cards timeout")(
-    test("should return valid response with only CSCards items") {
+  def spec = suite("CSCards timeout")(
+    test("should return valid response with only Scored Card items") {
+
       val expectedResp = Response(
         status = Status.Ok,
         headers = Headers(
           ("content-type", "application/json"),
-          ("content-length", "157")
+          ("content-length", "85")
         ),
         data = HttpData.fromString(csCardsResponse)
       )
 
       for {
-        server <- serverZio
-        fiber <- server.fork
+        app <- appZio
+        fiber <- Server.start(testPort, app).fork
         response <- Client.request(
-          url =
-            s"http://$recommendationsTestHost:$recommendationsTestPort/creditcards",
+          url = s"http://$testHost:$testPort/creditcards",
           method = Method.POST,
           content = HttpData.fromString(testUser)
         )
@@ -61,20 +55,17 @@ object RecommendationsScoredCardsExceptionSpec extends ZIOSpecDefault {
         _ <- fiber.interrupt
       } yield {
         val bodyStrip = body.replaceAll(" ", "")
-        val equalsStrip = testResponseWithoutScoredCards
-          .replaceAll("\n", "")
-          .replaceAll(" ", "")
+        val equalsStrip =
+          testResponseWithoutCSCards.replaceAll("\n", "").replaceAll(" ", "")
         assertTrue(response.status == expectedResp.status) &&
         assertTrue(response.headers == expectedResp.headers) &&
         assertTrue(bodyStrip.equals(equalsStrip))
       }
-    }
+    } @@ sequential
   ).provide(
-    ZLayer.succeed(appConfigWithScoredCardsNotFound),
     Context.live,
-    UpstreamImitatorService.live,
-    UpstreamController.live,
+    ZLayer.succeed(appConfig),
     RecommendationService.live,
     RecommendationController.live
-  )
+  ) @@ sequential
 }

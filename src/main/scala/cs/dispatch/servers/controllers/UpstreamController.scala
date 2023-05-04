@@ -28,12 +28,10 @@ case class UpstreamControllerImpl(upstreamService: UpstreamImitatorService)
         upstreamService
           .cardImitator(CallType.Cards)
           .fold(e => Response.fromHttpError(toHttpError(e)), Response.json)
-          .delay(1.seconds)
       case req @ Method.GET -> !! / "app.clearscore.com" / "api" / "global" / "backend-tech-test" / "v2" / "creditcards" =>
         upstreamService
           .cardImitator(CallType.CreditCards)
           .fold(e => Response.fromHttpError(toHttpError(e)), Response.json)
-          .delay(1.seconds)
     }
 
   override def create(): HttpApp[UpstreamControllerEnv, Throwable] = upstreamApp

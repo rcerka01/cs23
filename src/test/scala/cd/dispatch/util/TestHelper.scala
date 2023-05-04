@@ -10,8 +10,6 @@ import zhttp.http.{HeaderNames, HeaderValues, Headers}
 import zio.*
 
 object TestHelper {
-  val testHost = "127.0.0.1"
-  val testPort = 3333
 
   val csCardsResponse =
     """
@@ -38,7 +36,7 @@ object TestHelper {
       |       "approvalRating": 0.8
       |    }
       |]
-      |"""
+      |""".stripMargin
 
   val testUser =
     """
@@ -103,6 +101,8 @@ object TestHelper {
       |]
       |""".stripMargin
 
+  val testHost = "127.0.0.1"
+  val testPort = 9000
   val zioHttpConfig: ZioHttpConfig = ZioHttpConfig(testHost, testPort)
   val call1: Call = Call(
     "cards",

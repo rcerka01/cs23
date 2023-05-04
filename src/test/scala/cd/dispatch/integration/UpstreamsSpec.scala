@@ -8,6 +8,7 @@ import cs.dispatch.servers.controllers.{
 }
 import cs.dispatch.services.{RecommendationService, UpstreamImitatorService}
 import zhttp.http.{
+  !!,
   HeaderNames,
   HeaderValues,
   Headers,
@@ -15,7 +16,8 @@ import zhttp.http.{
   Method,
   Request,
   Response,
-  Status
+  Status,
+  URL
 }
 import zio.*
 import zio.test.{TestAspect, TestClock, ZIOSpecDefault, assertTrue}
@@ -27,35 +29,31 @@ import zio.test.TestAspect.{sequential, timeout}
 
 object UpstreamsSpec extends ZIOSpecDefault {
 
-  def serverZio = for {
+  def appZio = for {
     upstreamApp <- ZIO.serviceWith[UpstreamController](_.create())
-  } yield Server.start(testPort, upstreamApp).forever
+  } yield upstreamApp
 
   def spec = suite("upstream endpoints")(
     test("should respond on a heart beat") {
       val data = """{"hallo": ok}"""
 
-      val request = Client.request(
-        url = s"http://$testHost:$testPort/test",
+      val request = Request(
+        url = URL(!! / "test"),
         method = Method.POST,
-        content = HttpData.fromString(data)
+        data = HttpData.fromString(data)
       )
 
       val expectedResp = Response(
         status = Status.Ok,
-        headers = Headers(
-          ("content-type", "application/json"),
-          ("content-length", "13")
-        ),
+        headers =
+          Headers(HeaderNames.contentType, HeaderValues.applicationJson),
         data = HttpData.fromString(data)
       )
 
       for {
-        server <- serverZio
-        fiber <- server.fork
-        response <- request
+        app <- appZio
+        response <- app(request)
         body <- response.bodyAsString
-        _ <- fiber.interrupt
       } yield {
         assertTrue(response.status == expectedResp.status) &&
         assertTrue(response.headers == expectedResp.headers) &&
@@ -65,56 +63,60 @@ object UpstreamsSpec extends ZIOSpecDefault {
     test("should return CSCards request") {
       val expectedResp = Response(
         status = Status.Ok,
-        headers = Headers(
-          ("content-type", "application/json"),
-          ("content-length", "207")
-        ),
+        headers =
+          Headers(HeaderNames.contentType, HeaderValues.applicationJson),
         data = HttpData.fromString(csCardsResponse)
       )
 
+      val request = Request(
+        url = URL(
+          !! / "app.clearscore.com" / "api" / "global" / "backend-tech-test" / "v1" / "cards"
+        ),
+        method = Method.GET,
+        data = HttpData.empty
+      )
+
       for {
-        server <- serverZio
-        fiber <- server.fork
-        response <- Client.request(
-          s"http://$testHost:$testPort/app.clearscore.com/api/global/backend-tech-test/v1/cards"
-        )
+        app <- appZio
+        response <- app(request)
         body <- response.bodyAsString
-        _ <- fiber.interrupt
       } yield {
         assertTrue(response.status == expectedResp.status) &&
         assertTrue(response.headers == expectedResp.headers) &&
         assertTrue(body == csCardsResponse)
       }
-    } @@ TestAspect.timeout(3.seconds),
+    },
     test("should return Scored Cards request") {
       val expectedResp = Response(
         status = Status.Ok,
-        headers = Headers(
-          ("content-type", "application/json"),
-          ("content-length", "103")
-        ),
+        headers =
+          Headers(HeaderNames.contentType, HeaderValues.applicationJson),
         data = HttpData.fromString(scoredCardsResponse)
       )
 
+      val request = Request(
+        url = URL(
+          !! / "app.clearscore.com" / "api" / "global" / "backend-tech-test" / "v2" / "creditcards"
+        ),
+        method = Method.GET,
+        data = HttpData.empty
+      )
+
       for {
-        server <- serverZio
-        fiber <- server.fork
-        response <- Client.request(
-          s"http://$testHost:$testPort/app.clearscore.com/api/global/backend-tech-test/v2/creditcards"
-        )
+        app <- appZio
+        response <- app(request)
         body <- response.bodyAsString
-        _ <- fiber.interrupt
       } yield {
         assertTrue(response.status == expectedResp.status) &&
         assertTrue(response.headers == expectedResp.headers) &&
         assertTrue(body == scoredCardsResponse)
       }
-    } @@ TestAspect.timeout(3.seconds),
+    },
     test("should return status Not Found") {
       for {
-        server <- serverZio
-        fiber <- server.fork
-        response <- Client.request(s"http://$testHost:$testPort/not-exist")
+        app <- appZio
+        fiber <- Server.start(testPort, app).fork
+        response <- Client.request(s"http://127.0.0.1:$testPort/not-exist")
         _ <- fiber.interrupt
       } yield {
         assertTrue(response.status == Status.NotFound)
@@ -124,6 +126,6 @@ object UpstreamsSpec extends ZIOSpecDefault {
     ZLayer.succeed(appConfig),
     Context.live,
     UpstreamImitatorService.live,
-    UpstreamController.live,
+    UpstreamController.live
   )
 }
