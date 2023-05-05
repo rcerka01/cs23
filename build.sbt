@@ -17,6 +17,7 @@ lazy val root = (project in file("."))
       "dev.zio" %% "zio-config-typesafe" % "3.0.7",
       "dev.zio" %% "zio-logging" % "2.1.11",
       "io.d11" %% "zhttp" % "2.0.0-RC10",
+      "org.mock-server" % "mockserver-netty" % "5.14.0" % Test,
       "dev.zio" %% "zio-test" % "2.0.10" % Test,
       "dev.zio" %% "zio-test-sbt" % "2.0.10" % Test
     ),

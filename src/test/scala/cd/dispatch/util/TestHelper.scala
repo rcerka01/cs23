@@ -106,8 +106,8 @@ object TestHelper {
       |]
       |""".stripMargin
 
-  val testHost = "127.0.0.1"
-  val testPort = 8080
+  val testHost = "localhost"
+  val testPort = 9000
   val zioHttpConfig: ZioHttpConfig = ZioHttpConfig(testHost, testPort)
   val call1: Call = Call(
     "cards",
@@ -127,20 +127,4 @@ object TestHelper {
     List(call1, call2)
   )
   val appConfig: AppConfig = AppConfig(zioHttpConfig, upstreamResponseConfig)
-
-  def testServer(
-      request: ZIO[EventLoopGroup & ChannelFactory, Throwable, Response]
-  ) =
-    ZIO.scoped {
-      for {
-        upstreamApp <- ZIO.serviceWith[UpstreamController](_.create())
-        recommendationApp <- ZIO.serviceWith[RecommendationController](
-          _.create()
-        )
-        server = Server.start(testPort, upstreamApp ++ recommendationApp)
-        fiber <- server.fork
-        response <- request
-        _ <- fiber.interrupt
-      } yield response
-    }
 }
