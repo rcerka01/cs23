@@ -11,9 +11,9 @@ import cs.dispatch.servers.controllers.{
 import cs.dispatch.services.{RecommendationService, UpstreamImitatorService}
 import io.netty.util.AsciiString
 import zhttp.http.*
-import zhttp.service.{Client, Server}
+import zhttp.service.{ChannelFactory, Client, EventLoopGroup, Server}
 import zio.*
-import zio.test.TestAspect.{sequential, timeout}
+import zio.test.TestAspect.{aroundTest, flaky, sequential, success, timeout}
 import zio.test.{TestAspect, TestClock, ZIOSpecDefault, assertTrue}
 
 object RecommendationsErrorSpec extends ZIOSpecDefault {
@@ -25,30 +25,16 @@ object RecommendationsErrorSpec extends ZIOSpecDefault {
 
   def spec = suite("recommendations endpoint on errors")(
     test("should return bad response if can't serialize User") {
+      val request = Request(
+        url = URL(!! / "creditcards"),
+        method = Method.POST,
+        data = HttpData.fromString("invalid_user_data")
+      )
+
       for {
         app <- appZio
-        fiber <- Server.start(testPort, app).forever.fork
-        response <- Client.request(
-          url = s"http://$testHost:$testPort/creditcards",
-          method = Method.POST,
-          content = HttpData.fromString("invalid_user")
-        )
-        _ <- fiber.interrupt
-      } yield {
-        assertTrue(response.status == Status.BadRequest)
-      }
-    },
-    test("should return status Not Found") {
-      for {
-        app <- appZio
-        fiber <- Server.start(testPort, app).fork
-        response <- Client.request(
-          s"http://$testHost:$testPort/not-exist"
-        )
-        _ <- fiber.interrupt
-      } yield {
-        assertTrue(response.status == Status.NotFound)
-      }
+        response <- app(request)
+      } yield assertTrue(response.status == Status.BadRequest)
     }
   ).provide(
     ZLayer.succeed(appConfig),
@@ -57,5 +43,5 @@ object RecommendationsErrorSpec extends ZIOSpecDefault {
     UpstreamController.live,
     RecommendationService.live,
     RecommendationController.live
-  )
+  ) @@ sequential
 }

@@ -25,15 +25,9 @@ import cd.dispatch.util.TestHelper.*
 import cs.dispatch.Context.Env
 import io.netty.util.AsciiString
 import zhttp.service.{Client, Server}
-import zio.test.TestAspect.{sequential, timeout}
+import zio.test.TestAspect.{flaky, forked, retries, sequential, timeout}
 
 object RecommendationsSpec extends ZIOSpecDefault {
-
-  val appZio = for {
-    upstreamApp <- ZIO.serviceWith[UpstreamController](_.create())
-    recommendationApp <- ZIO.serviceWith[RecommendationController](_.create())
-  } yield upstreamApp ++ recommendationApp
-
   def spec = suite("recommendations endpoint")(
     test("should return valid request") {
       val expectedResp = Response(
@@ -45,16 +39,15 @@ object RecommendationsSpec extends ZIOSpecDefault {
         data = HttpData.fromString(testResponse)
       )
 
+      val request = Client.request(
+        url = s"http://$testHost:$testPort/creditcards",
+        method = Method.POST,
+        content = HttpData.fromString(testUser)
+      )
+
       for {
-        app <- appZio
-        fiber <- Server.start(testPort, app).fork
-        response <- Client.request(
-          url = s"http://$testHost:$testPort/creditcards",
-          method = Method.POST,
-          content = HttpData.fromString(testUser)
-        )
+        response <- testServer(request)
         body <- response.bodyAsString
-        _ <- fiber.interrupt
       } yield {
         val bodyStrip = body.replaceAll(" ", "")
         val equalsStrip =
@@ -71,5 +64,5 @@ object RecommendationsSpec extends ZIOSpecDefault {
     UpstreamController.live,
     RecommendationService.live,
     RecommendationController.live
-  ) @@ sequential
+  )
 }

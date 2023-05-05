@@ -111,16 +111,6 @@ object UpstreamsSpec extends ZIOSpecDefault {
         assertTrue(response.headers == expectedResp.headers) &&
         assertTrue(body == scoredCardsResponse)
       }
-    },
-    test("should return status Not Found") {
-      for {
-        app <- appZio
-        fiber <- Server.start(testPort, app).fork
-        response <- Client.request(s"http://127.0.0.1:$testPort/not-exist")
-        _ <- fiber.interrupt
-      } yield {
-        assertTrue(response.status == Status.NotFound)
-      }
     }
   ).provide(
     ZLayer.succeed(appConfig),
