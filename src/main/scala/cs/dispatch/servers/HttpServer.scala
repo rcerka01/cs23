@@ -1,21 +1,9 @@
 package cs.dispatch.servers
 
-import cs.dispatch.Context
 import cs.dispatch.clients.SimpleHttpClient
 import cs.dispatch.config.AppConfig
-import cs.dispatch.servers.controllers.{
-  RecommendationController,
-  UpstreamController
-}
-import zhttp.http.*
-import zhttp.service.server.ServerChannelFactory
-import zhttp.service.{
-  Channel,
-  ChannelFactory,
-  EventLoopGroup,
-  Server,
-  ServerChannelFactory
-}
+import cs.dispatch.servers.controllers.{RecommendationController, UpstreamController}
+import zio.http.Server
 import zio.*
 import zio.UIO
 import zio.config.*
@@ -33,14 +21,9 @@ case class HttpServerImpl(
     recommendationController: RecommendationController
 ) extends HttpServer {
   override def create: Task[ExitCode] =
-    Server(upstreamController.create() ++ recommendationController.create())
-      .withPort(appConfig.zioHttp.port)
-      .start
+    Server.serve(upstreamController.create() ++ recommendationController.create())
       .provide(
-        Config.live,
-        Context.live,
-        UpstreamImitatorService.live,
-        RecommendationService.live
+        Server.defaultWithPort(appConfig.zioHttp.port)
       )
 }
 
@@ -48,6 +31,5 @@ object HttpServer {
   def live: RLayer[
     AppConfig & UpstreamController & RecommendationController,
     HttpServer
-  ] =
-    ZLayer.fromFunction(HttpServerImpl.apply)
+  ] = ZLayer.fromFunction(HttpServerImpl.apply)
 }

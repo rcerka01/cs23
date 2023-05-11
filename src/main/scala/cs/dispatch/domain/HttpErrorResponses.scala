@@ -2,7 +2,7 @@ package cs.dispatch.domain
 
 import cs.dispatch.config.ConfigError
 import cs.dispatch.servers.controllers.UserResponseError
-import zhttp.http.HttpError
+import zio.http.HttpError
 
 object HttpErrorResponses {
   def toHttpError(e: Throwable) =

@@ -1,18 +1,12 @@
-package cd.dispatch.integration
+package cs.dispatch.integration
 
-import cd.dispatch.util.TestHelper.*
-import cs.dispatch.Context
-import cs.dispatch.Context.Env
+import cs.dispatch.util.TestHelper.*
 import cs.dispatch.config.{AppConfig, Config}
-import cs.dispatch.servers.controllers.{
-  RecommendationController,
-  UpstreamController
-}
+import cs.dispatch.servers.controllers.{RecommendationController, UpstreamController}
 import cs.dispatch.services.{RecommendationService, UpstreamImitatorService}
 import io.netty.util.AsciiString
-import zhttp.http.*
-import zhttp.service.{ChannelFactory, Client, EventLoopGroup, Server}
 import zio.*
+import zio.http.{!!, Body, Headers, Method, Request, Status, URL, Version}
 import zio.test.TestAspect.{aroundTest, flaky, sequential, success, timeout}
 import zio.test.{TestAspect, TestClock, ZIOSpecDefault, assertTrue}
 
@@ -28,17 +22,19 @@ object RecommendationsErrorSpec extends ZIOSpecDefault {
       val request = Request(
         url = URL(!! / "creditcards"),
         method = Method.POST,
-        data = HttpData.fromString("invalid_user_data")
+        body = Body.fromString("invalid_user_data"),
+        headers = Headers.empty,
+        version = Version.Http_1_1,
+        remoteAddress = None
       )
 
       for {
         app <- appZio
-        response <- app(request)
+        response <- app.runZIO(request)
       } yield assertTrue(response.status == Status.BadRequest)
     }
   ).provide(
     ZLayer.succeed(appConfig),
-    Context.live,
     UpstreamImitatorService.live,
     UpstreamController.live,
     RecommendationService.live,

@@ -16,7 +16,10 @@ lazy val root = (project in file("."))
       "dev.zio" %% "zio-config-magnolia" % "3.0.7",
       "dev.zio" %% "zio-config-typesafe" % "3.0.7",
       "dev.zio" %% "zio-logging" % "2.1.11",
-      "io.d11" %% "zhttp" % "2.0.0-RC10",
+      "dev.zio" %% "zio-http" % "3.0.0-RC1",
+      "com.softwaremill.sttp.tapir" %% "tapir-core" % "1.3.0",
+      "com.softwaremill.sttp.tapir" %% "tapir-zio-http-server" % "1.3.0",
+      "com.softwaremill.sttp.tapir" %% "tapir-json-circe" % "1.3.0",
       "org.mock-server" % "mockserver-netty" % "5.14.0" % Test,
       "dev.zio" %% "zio-test" % "2.0.10" % Test,
       "dev.zio" %% "zio-test-sbt" % "2.0.10" % Test

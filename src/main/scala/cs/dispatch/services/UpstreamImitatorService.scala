@@ -2,7 +2,7 @@ package cs.dispatch.services
 
 import cs.dispatch.config
 import cs.dispatch.config.{AppConfig, ConfigError}
-import zhttp.http.Response
+import zio.http.Response
 import zio.{ZIO, ZLayer}
 
 enum CallType:

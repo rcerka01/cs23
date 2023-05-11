@@ -1,30 +1,26 @@
-package cd.dispatch.integration
+package cs.dispatch.integration
 
-import cs.dispatch.Context
 import cs.dispatch.config.{AppConfig, Config}
 import cs.dispatch.servers.controllers.{
   RecommendationController,
   UpstreamController
 }
 import cs.dispatch.services.{RecommendationService, UpstreamImitatorService}
-import zhttp.http.{
+import zio.http.{
   !!,
-  HeaderNames,
-  HeaderValues,
+  Body,
   Headers,
-  HttpData,
   Method,
   Request,
   Response,
   Status,
-  URL
+  URL,
+  Version
 }
 import zio.*
 import zio.test.{TestAspect, TestClock, ZIOSpecDefault, assertTrue}
-import cd.dispatch.util.TestHelper.*
-import cs.dispatch.Context.Env
+import cs.dispatch.util.TestHelper.*
 import io.netty.util.AsciiString
-import zhttp.service.{Client, Server}
 import zio.test.TestAspect.{sequential, timeout}
 
 object UpstreamsSpec extends ZIOSpecDefault {
@@ -40,20 +36,22 @@ object UpstreamsSpec extends ZIOSpecDefault {
       val request = Request(
         url = URL(!! / "test"),
         method = Method.POST,
-        data = HttpData.fromString(data)
+        body = Body.fromString(data),
+        headers = Headers.empty,
+        version = Version.Http_1_1,
+        remoteAddress = None
       )
 
       val expectedResp = Response(
         status = Status.Ok,
-        headers =
-          Headers(HeaderNames.contentType, HeaderValues.applicationJson),
-        data = HttpData.fromString(data)
+        headers = Headers("content-type", "application/json"),
+        body = Body.fromString(data)
       )
 
       for {
         app <- appZio
-        response <- app(request)
-        body <- response.bodyAsString
+        response <- app.runZIO(request)
+        body <- response.body.asString
       } yield {
         assertTrue(response.status == expectedResp.status) &&
         assertTrue(response.headers == expectedResp.headers) &&
@@ -63,9 +61,8 @@ object UpstreamsSpec extends ZIOSpecDefault {
     test("should return CSCards request") {
       val expectedResp = Response(
         status = Status.Ok,
-        headers =
-          Headers(HeaderNames.contentType, HeaderValues.applicationJson),
-        data = HttpData.fromString(csCardsResponse)
+        headers = Headers("content-type", "application/json"),
+        body = Body.fromString(csCardsResponse)
       )
 
       val request = Request(
@@ -73,13 +70,16 @@ object UpstreamsSpec extends ZIOSpecDefault {
           !! / "app.clearscore.com" / "api" / "global" / "backend-tech-test" / "v1" / "cards"
         ),
         method = Method.GET,
-        data = HttpData.empty
+        body = Body.empty,
+        headers = Headers.empty,
+        version = Version.Http_1_1,
+        remoteAddress = None
       )
 
       for {
         app <- appZio
-        response <- app(request)
-        body <- response.bodyAsString
+        response <- app.runZIO(request)
+        body <- response.body.asString
       } yield {
         assertTrue(response.status == expectedResp.status) &&
         assertTrue(response.headers == expectedResp.headers) &&
@@ -89,9 +89,8 @@ object UpstreamsSpec extends ZIOSpecDefault {
     test("should return Scored Cards request") {
       val expectedResp = Response(
         status = Status.Ok,
-        headers =
-          Headers(HeaderNames.contentType, HeaderValues.applicationJson),
-        data = HttpData.fromString(scoredCardsResponse)
+        headers = Headers("content-type", "application/json"),
+        body = Body.fromString(scoredCardsResponse)
       )
 
       val request = Request(
@@ -99,13 +98,16 @@ object UpstreamsSpec extends ZIOSpecDefault {
           !! / "app.clearscore.com" / "api" / "global" / "backend-tech-test" / "v2" / "creditcards"
         ),
         method = Method.GET,
-        data = HttpData.empty
+        body = Body.empty,
+        headers = Headers.empty,
+        version = Version.Http_1_1,
+        remoteAddress = None
       )
 
       for {
         app <- appZio
-        response <- app(request)
-        body <- response.bodyAsString
+        response <- app.runZIO(request)
+        body <- response.body.asString
       } yield {
         assertTrue(response.status == expectedResp.status) &&
         assertTrue(response.headers == expectedResp.headers) &&
@@ -114,7 +116,6 @@ object UpstreamsSpec extends ZIOSpecDefault {
     }
   ).provide(
     ZLayer.succeed(appConfig),
-    Context.live,
     UpstreamImitatorService.live,
     UpstreamController.live
   )

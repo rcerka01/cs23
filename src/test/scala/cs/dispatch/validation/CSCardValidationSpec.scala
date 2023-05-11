@@ -1,7 +1,8 @@
-package cs.dispatch.domain
+package cs.dispatch.validation
 
 import cats.data.NonEmptyList
 import cats.data.Validated.{Invalid, Valid}
+import cs.dispatch.domain.{CSCardResponse, CSCardResponseError}
 import zio.test.*
 import zio.test.Assertion.*
 

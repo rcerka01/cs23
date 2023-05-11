@@ -1,17 +1,17 @@
-package cd.dispatch.services
+package cs.dispatch.services
 
-import cd.dispatch.util.TestHelper
 import cs.dispatch.services.RecommendationServiceImpl
 import zio.test.*
 import zio.test.Assertion.*
 import cs.dispatch.config.ZioHttpConfig
-import TestHelper.*
+import cs.dispatch.util.TestHelper.*
 import cs.dispatch.config.*
 import cs.dispatch.domain.*
+import cs.dispatch.util.TestHelper
 import zio.*
 import zio.test.*
 
-object RecommendationServiceImplSpec extends ZIOSpecDefault {
+object RecommendationsUnitSpec extends ZIOSpecDefault {
 
   def spec =
     suite("RecommendationServiceImpl")(

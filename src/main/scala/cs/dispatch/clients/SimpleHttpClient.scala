@@ -2,13 +2,9 @@ package cs.dispatch.clients
 
 import cs.dispatch.config.AppConfig
 import zio.*
-import zhttp.service.*
-import zhttp.*
-import zhttp.http.*
-import cs.dispatch.Context._
+import zio.http.*
 
 object SimpleHttpClient {
-  //val headers = Headers("Content-Type", "application/json")
 
   def callHttp(
       port: Int,
@@ -16,8 +12,8 @@ object SimpleHttpClient {
       path: String,
       method: Method,
       timeout: Duration = 3.seconds,
-      body: HttpData = HttpData.fromString("")
-  ): ZIO[Env with AppConfig, Throwable, String] =
+      body: Body = Body.fromString("")
+  ) =
     for {
       res <- Client
         .request(
@@ -27,7 +23,7 @@ object SimpleHttpClient {
         )
         .timeout(timeout)
       data <- res match {
-        case Some(r) => r.bodyAsString
+        case Some(r) => r.body.asString
         case None =>
           ZIO.logError(
             s"No response from upstream http://$host:$port$path in timely manner."

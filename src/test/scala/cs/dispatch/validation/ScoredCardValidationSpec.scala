@@ -1,4 +1,4 @@
-package cd.dispatch.validation
+package cs.dispatch.validation
 
 import cats.data.*
 import cats.data.Validated.*

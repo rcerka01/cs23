@@ -1,8 +1,7 @@
-package cd.dispatch.integration
+package cs.dispatch.integration
 
-import cd.dispatch.util.TestHelper.*
-import cs.dispatch.Context
-import cs.dispatch.Context.Env
+import cs.dispatch.util.TestHelper.*
+
 import cs.dispatch.config.{AppConfig, Config, UpstreamResponseConfig}
 import cs.dispatch.servers.controllers.{
   RecommendationController,
@@ -11,8 +10,7 @@ import cs.dispatch.servers.controllers.{
 import cs.dispatch.services.{RecommendationService, UpstreamImitatorService}
 import io.netty.util.AsciiString
 import org.mockserver.client.MockServerClient
-import zhttp.http.*
-import zhttp.service.{Client, Server}
+import zio.http.*
 import zio.{UIO, json, *}
 import zio.test.TestAspect.{flaky, forked, retries, sequential, timeout}
 import zio.test.{TestAspect, TestClock, ZIOSpecDefault, assertTrue}
@@ -49,21 +47,23 @@ object ScoredCardsTimeoutSpec extends ZIOSpecDefault {
 
       val expectedResp = Response(
         status = Status.Ok,
-        headers =
-          Headers((HeaderNames.contentType, HeaderValues.applicationJson)),
-        data = HttpData.fromString(csCardsResponse)
+        headers = Headers("content-type", "application/json"),
+        body = Body.fromString(csCardsResponse)
       )
 
       val request = Request(
         url = URL(!! / "creditcards"),
         method = Method.POST,
-        data = HttpData.fromString(testUser)
+        body = Body.fromString(testUser),
+        headers = Headers.empty,
+        version = Version.Http_1_1,
+        remoteAddress = None
       )
 
       for {
         app <- ZIO.serviceWith[RecommendationController](_.create())
-        response <- app(request)
-        body <- response.bodyAsString
+        response <- app.runZIO(request)
+        body <- response.body.asString
       } yield {
         val bodyStrip = body.replaceAll(" ", "")
         val equalsStrip =
@@ -76,7 +76,6 @@ object ScoredCardsTimeoutSpec extends ZIOSpecDefault {
       }
     }
   ).provide(
-    Context.live,
     ZLayer.succeed(appConfig.copy(zioHttp = zioHttpConfig.copy(port = 9002))),
     RecommendationService.live,
     RecommendationController.live

@@ -1,4 +1,4 @@
-package cd.dispatch.util
+package cs.dispatch.util
 
 import cs.dispatch.config.{
   AppConfig,
@@ -10,8 +10,6 @@ import cs.dispatch.servers.controllers.{
   RecommendationController,
   UpstreamController
 }
-import zhttp.http.{HeaderNames, HeaderValues, Headers, Response}
-import zhttp.service.{ChannelFactory, EventLoopGroup, Server}
 import zio.*
 
 object TestHelper {

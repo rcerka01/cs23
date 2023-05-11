@@ -5,10 +5,8 @@ import cs.dispatch.config.{AppConfig, Config, ZioHttpConfig}
 import cs.dispatch.servers.HttpServer
 import cs.dispatch.servers.controllers.{RecommendationController, UpstreamController}
 import cs.dispatch.services.{RecommendationService, UpstreamImitatorService}
-import zhttp.service.{ChannelFactory, EventLoopGroup, Server}
 import zio.*
 import zio.Console.printLine
-import izumi.reflect.dottyreflection.ReflectionUtil.reflectiveUncheckedNonOverloadedSelectable
 
 import java.io.IOException
 

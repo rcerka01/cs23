@@ -1,18 +1,9 @@
 package cs.dispatch.services
 
-import cs.dispatch.Context.Env
 import cs.dispatch.clients.SimpleHttpClient
-import cs.dispatch.{Context, config}
+import cs.dispatch.config
 import cs.dispatch.config.{AppConfig, Config, ConfigError}
-import cs.dispatch.domain.{
-  CSCardResponse,
-  CSCardResponseError,
-  Recommendation,
-  ScoredCardResponse,
-  ScoredCardResponseError,
-  User
-}
-import zhttp.http.{Method, Response}
+import zio.http.{Client, Method, Response}
 import zio.Console.printLine
 import zio.json.{DeriveJsonDecoder, JsonDecoder}
 import zio.{Console, Duration, ZIO, ZLayer}
@@ -21,6 +12,7 @@ import zio.json.*
 import cats.implicits.*
 import cats.data.*
 import cats.data.Validated.{Invalid, Valid}
+import cs.dispatch.domain.{CSCardResponse, CSCardResponseError, Recommendation, ScoredCardResponse, ScoredCardResponseError, User}
 
 trait RecommendationService {
   def getRecommendations(
@@ -34,7 +26,7 @@ final case class RecommendationServiceImpl(appConfig: AppConfig)
   private def callUpstream(
       path: String,
       timeout: Duration
-  ): ZIO[Env with AppConfig, Throwable, String] = {
+  ): ZIO[Client, Throwable, String] = {
     val port = appConfig.zioHttp.port
     val host = appConfig.zioHttp.host
     SimpleHttpClient.callHttp(port, host, path, Method.GET, timeout)
@@ -162,7 +154,9 @@ final case class RecommendationServiceImpl(appConfig: AppConfig)
       recs <- ZIO.succeed(
         generateRecommendations(validatedCSCards, validatedScoredCards)
       )
-    } yield (recs)).provide(Context.live, Config.live)
+    } yield (recs)).provide(
+      Client.default
+    )
   }
 }
 
