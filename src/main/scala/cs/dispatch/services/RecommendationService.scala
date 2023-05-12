@@ -12,7 +12,8 @@ import zio.json.*
 import cats.implicits.*
 import cats.data.*
 import cats.data.Validated.{Invalid, Valid}
-import cs.dispatch.domain.{CSCardResponse, CSCardResponseError, Recommendation, ScoredCardResponse, ScoredCardResponseError, User}
+import cs.dispatch.controllers.responses.{CSCardResponse, CSCardResponseError, ScoredCardResponse, ScoredCardResponseError}
+import cs.dispatch.domain.{Recommendation, User}
 
 trait RecommendationService {
   def getRecommendations(

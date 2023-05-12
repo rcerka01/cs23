@@ -1,7 +1,7 @@
 package cs.dispatch.integration
 
 import cs.dispatch.config.{AppConfig, Config}
-import cs.dispatch.servers.controllers.{RecommendationController, UpstreamController}
+import cs.dispatch.controllers.{RecommendationController, UpstreamController}
 import cs.dispatch.services.{RecommendationService, UpstreamImitatorService}
 import zio.http.{!!, Body, Headers, Method, Request, Response, Status, URL, Version}
 import zio.*

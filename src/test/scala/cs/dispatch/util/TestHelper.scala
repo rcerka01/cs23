@@ -6,10 +6,7 @@ import cs.dispatch.config.{
   UpstreamResponseConfig,
   ZioHttpConfig
 }
-import cs.dispatch.servers.controllers.{
-  RecommendationController,
-  UpstreamController
-}
+import cs.dispatch.controllers.{RecommendationController, UpstreamController}
 import zio.*
 
 object TestHelper {

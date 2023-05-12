@@ -5,8 +5,8 @@ import cats.data.Validated.*
 import cats.implicits.*
 import zio.test.*
 import zio.test.Assertion.*
-import cs.dispatch.domain.{ScoredCardResponse, ScoredCardResponseError}
 import cats.data.NonEmptyList
+import cs.dispatch.controllers.responses.{ScoredCardResponse, ScoredCardResponseError}
 
 object ScoredCardValidationSpec extends ZIOSpecDefault {
 

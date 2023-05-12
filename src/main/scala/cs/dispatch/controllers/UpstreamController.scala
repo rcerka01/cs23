@@ -1,14 +1,14 @@
-package cs.dispatch.servers.controllers
+package cs.dispatch.controllers
 
 import cs.dispatch.clients.SimpleHttpClient
 import zio.config.ReadError
-import zio.http.{HttpApp, *}
+import zio.http.*
 import zio.{RLayer, UIO, ZIO, ZLayer}
 import cs.dispatch.Main.validateEnv
 import cs.dispatch.config.{AppConfig, ConfigError}
 import cs.dispatch.services.{CallType, UpstreamImitatorService}
 import cs.dispatch.config.*
-import cs.dispatch.domain.HttpErrorResponses.toHttpError
+import cs.dispatch.domain.HttpErrorHandler.toHttpError
 import zio.http.Status.BadRequest
 
 trait UpstreamController {
@@ -25,12 +25,10 @@ case class UpstreamControllerImpl(upstreamService: UpstreamImitatorService)
       case req @ Method.GET -> !! / "app.clearscore.com" / "api" / "global" / "backend-tech-test" / "v1" / "cards" =>
         upstreamService
           .cardImitator(CallType.Cards)
-          .provide(Config.live)
           .fold(e => Response.fromHttpError(toHttpError(e)), Response.json)
       case req @ Method.GET -> !! / "app.clearscore.com" / "api" / "global" / "backend-tech-test" / "v2" / "creditcards" =>
         upstreamService
           .cardImitator(CallType.CreditCards)
-          .provide(Config.live)
           .fold(e => Response.fromHttpError(toHttpError(e)), Response.json)
     }
 

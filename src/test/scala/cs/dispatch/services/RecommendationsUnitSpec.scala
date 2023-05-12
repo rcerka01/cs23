@@ -6,6 +6,7 @@ import zio.test.Assertion.*
 import cs.dispatch.config.ZioHttpConfig
 import cs.dispatch.util.TestHelper.*
 import cs.dispatch.config.*
+import cs.dispatch.controllers.responses.{CSCardResponse, ScoredCardResponse}
 import cs.dispatch.domain.*
 import cs.dispatch.util.TestHelper
 import zio.*

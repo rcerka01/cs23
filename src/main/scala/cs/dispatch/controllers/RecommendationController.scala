@@ -1,7 +1,7 @@
-package cs.dispatch.servers.controllers
+package cs.dispatch.controllers
 
 import cs.dispatch.clients.SimpleHttpClient
-import zio.http.{HttpApp, *}
+import zio.http.*
 import zio.{RLayer, UIO, ZIO, ZLayer}
 import cs.dispatch.Main.validateEnv
 import cs.dispatch.config.{AppConfig, Config}
@@ -9,7 +9,7 @@ import cs.dispatch.services.RecommendationService
 import cs.dispatch.Main.validateEnv
 import zio.json.*
 import cs.dispatch.Main.validateEnv
-import cs.dispatch.domain.HttpErrorResponses.toHttpError
+import cs.dispatch.domain.HttpErrorHandler.toHttpError
 import cs.dispatch.domain.User
 import magnolia1.Monadic.map
 

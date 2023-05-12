@@ -2,8 +2,8 @@ package cs.dispatch
 
 import cs.dispatch.Main.Environment
 import cs.dispatch.config.{AppConfig, Config, ZioHttpConfig}
+import cs.dispatch.controllers.{RecommendationController, UpstreamController}
 import cs.dispatch.servers.HttpServer
-import cs.dispatch.servers.controllers.{RecommendationController, UpstreamController}
 import cs.dispatch.services.{RecommendationService, UpstreamImitatorService}
 import zio.*
 import zio.Console.printLine

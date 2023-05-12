@@ -8,7 +8,7 @@ import zio.json.{DeriveJsonDecoder, DeriveJsonEncoder, JsonDecoder, JsonEncoder}
 case class Recommendation(provider: String, name: String, apr: Double, cardScore: Double)
 
 object Recommendation {
-  
+
   // zio http
   given decoder: JsonDecoder[Recommendation] =
     DeriveJsonDecoder.gen[Recommendation]
@@ -18,6 +18,6 @@ object Recommendation {
   // circe
   given circeCodec: Codec[Recommendation] = deriveCodec
   given circeEncoder: Encoder[Recommendation] = deriveEncoder[Recommendation]
-  
+
 }
 

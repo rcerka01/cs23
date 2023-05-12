@@ -1,7 +1,6 @@
-package cs.dispatch.domain
+package cs.dispatch.controllers.responses
 
-import cats.data.Validated
-import cats.data.NonEmptyList
+import cats.data.{NonEmptyList, Validated}
 import cats.implicits.*
 import zio.json.{DeriveJsonDecoder, DeriveJsonEncoder, JsonDecoder, JsonEncoder}
 

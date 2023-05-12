@@ -2,15 +2,12 @@ package cs.dispatch.integration
 
 import cs.dispatch.util.TestHelper.*
 import cs.dispatch.config.{AppConfig, Config, UpstreamResponseConfig}
-import cs.dispatch.servers.controllers.{
-  RecommendationController,
-  UpstreamController
-}
+import cs.dispatch.controllers.{RecommendationController, UpstreamController}
 import cs.dispatch.services.{RecommendationService, UpstreamImitatorService}
 import io.netty.util.AsciiString
 import org.mockserver.client.MockServerClient
 import zio.http.*
-import zio.{UIO, json, *}
+import zio.*
 import zio.test.TestAspect.{flaky, forked, retries, sequential, timeout}
 import zio.test.{TestAspect, TestClock, ZIOSpecDefault, assertTrue}
 import org.mockserver.client.MockServerClient

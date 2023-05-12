@@ -2,7 +2,7 @@ package cs.dispatch.integration
 
 import cs.dispatch.util.TestHelper.*
 import cs.dispatch.config.{AppConfig, Config}
-import cs.dispatch.servers.controllers.{RecommendationController, UpstreamController}
+import cs.dispatch.controllers.{RecommendationController, UpstreamController}
 import cs.dispatch.services.{RecommendationService, UpstreamImitatorService}
 import io.netty.util.AsciiString
 import zio.*

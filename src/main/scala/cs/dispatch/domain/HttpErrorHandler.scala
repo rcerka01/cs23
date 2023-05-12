@@ -1,10 +1,10 @@
 package cs.dispatch.domain
 
 import cs.dispatch.config.ConfigError
-import cs.dispatch.servers.controllers.UserResponseError
+import cs.dispatch.controllers.UserResponseError
 import zio.http.HttpError
 
-object HttpErrorResponses {
+object HttpErrorHandler {
   def toHttpError(e: Throwable) =
     e match {
       case e: UserResponseError => HttpError.BadRequest(e.getMessage)

@@ -3,13 +3,13 @@ package cs.dispatch.services
 import cs.dispatch.config
 import cs.dispatch.config.{AppConfig, ConfigError}
 import zio.http.Response
-import zio.{ZIO, ZLayer}
+import zio.{IO, ZIO, ZLayer}
 
 enum CallType:
   case CreditCards, Cards
 
 trait UpstreamImitatorService {
-  def cardImitator(callType: CallType): ZIO[AppConfig, ConfigError, String]
+  def cardImitator(callType: CallType): IO[ConfigError, String]
 }
 
 case class UpstreamImitatorServiceImpl(appConfig: AppConfig)
