@@ -3,7 +3,7 @@ package cs.dispatch.services
 import cs.dispatch.config
 import cs.dispatch.config.{AppConfig, ConfigError}
 import zio.http.Response
-import zio.{IO, ZIO, ZLayer}
+import zio.{IO, RLayer, URLayer, ZIO, ZLayer}
 
 enum CallType:
   case CreditCards, Cards
@@ -11,11 +11,12 @@ enum CallType:
 trait UpstreamImitatorService {
   def cardImitator(callType: CallType): IO[ConfigError, String]
 }
+import cs.dispatch.Main.validateEnv
 
-case class UpstreamImitatorServiceImpl(appConfig: AppConfig)
+final private case class UpstreamImitatorServiceImpl(appConfig: AppConfig)
   extends UpstreamImitatorService {
 
-  def cardImitator(callType: CallType): ZIO[Any, ConfigError, String] = {
+  def cardImitator(callType: CallType): IO[ConfigError, String] = {
     appConfig.upstreamResponse.callTypes.find(_.callType.equals(callType.toString.toLowerCase())) match {
       case Some(config) => ZIO.succeed(config.response.stripMargin)
       case _ =>
@@ -26,6 +27,6 @@ case class UpstreamImitatorServiceImpl(appConfig: AppConfig)
 }
 
 object UpstreamImitatorService {
-  def live: ZLayer[AppConfig, ConfigError, UpstreamImitatorServiceImpl] =
+  lazy val live: RLayer[AppConfig, UpstreamImitatorServiceImpl] =
     ZLayer.fromFunction(UpstreamImitatorServiceImpl.apply)
 }

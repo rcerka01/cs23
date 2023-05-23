@@ -3,7 +3,7 @@ package cs.dispatch.controllers
 import cs.dispatch.clients.SimpleHttpClient
 import zio.config.ReadError
 import zio.http.*
-import zio.{RLayer, UIO, ZIO, ZLayer}
+import zio.{RLayer, UIO, URLayer, ZIO, ZLayer}
 import cs.dispatch.Main.validateEnv
 import cs.dispatch.config.{AppConfig, ConfigError}
 import cs.dispatch.services.{CallType, UpstreamImitatorService}
@@ -15,13 +15,15 @@ trait UpstreamController {
   def create(): App[Any]
 }
 
-case class UpstreamControllerImpl(upstreamService: UpstreamImitatorService)
-    extends UpstreamController {
+private final case class UpstreamControllerImpl(
+    upstreamService: UpstreamImitatorService
+) extends UpstreamController {
 
   private val upstreamApp: App[Any] =
     Http.collectZIO[Request] {
       case req @ Method.POST -> !! / "test" =>
-          req.body.asString.mapBoth(_ => Response.status(BadRequest), Response.json)
+        req.body.asString
+          .mapBoth(_ => Response.status(BadRequest), Response.json)
       case req @ Method.GET -> !! / "app.clearscore.com" / "api" / "global" / "backend-tech-test" / "v1" / "cards" =>
         upstreamService
           .cardImitator(CallType.Cards)
@@ -35,6 +37,6 @@ case class UpstreamControllerImpl(upstreamService: UpstreamImitatorService)
   override def create(): App[Any] = upstreamApp
 }
 object UpstreamController {
-  def live: RLayer[UpstreamImitatorService, UpstreamController] =
+  lazy val live: URLayer[UpstreamImitatorService, UpstreamController] =
     ZLayer.fromFunction(UpstreamControllerImpl.apply)
 }

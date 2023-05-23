@@ -21,14 +21,15 @@ case class HttpServerImpl(
     recommendationController: RecommendationController
 ) extends HttpServer {
   override def create: Task[ExitCode] =
-    Server.serve(upstreamController.create() ++ recommendationController.create())
+    Server
+      .serve(upstreamController.create() ++ recommendationController.create())
       .provide(
         Server.defaultWithPort(appConfig.zioHttp.port)
       )
 }
 
 object HttpServer {
-  def live: RLayer[
+  lazy val live: RLayer[
     AppConfig & UpstreamController & RecommendationController,
     HttpServer
   ] = ZLayer.fromFunction(HttpServerImpl.apply)

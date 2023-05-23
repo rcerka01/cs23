@@ -2,7 +2,7 @@ package cs.dispatch.controllers
 
 import cs.dispatch.clients.SimpleHttpClient
 import zio.http.*
-import zio.{RLayer, UIO, ZIO, ZLayer}
+import zio.{RLayer, UIO, URLayer, ZIO, ZLayer}
 import cs.dispatch.Main.validateEnv
 import cs.dispatch.config.{AppConfig, Config}
 import cs.dispatch.services.RecommendationService
@@ -19,7 +19,7 @@ trait RecommendationController {
 
 class UserResponseError(msg: String) extends Exception(msg)
 
-case class RecommendationControllerImpl(
+private final case class RecommendationControllerImpl(
     recommendationService: RecommendationService
 ) extends RecommendationController {
   given encoder: JsonEncoder[User] = DeriveJsonEncoder.gen[User]
@@ -35,7 +35,6 @@ case class RecommendationControllerImpl(
             )
           data <- recommendationService.getRecommendations(user)
         } yield Response.json(data.toJson))
-        .provide(Config.live)
         .catchAll(e => ZIO.succeed(Response.fromHttpError(toHttpError(e))))
     }
 
@@ -43,6 +42,6 @@ case class RecommendationControllerImpl(
 }
 
 object RecommendationController {
-  def live: RLayer[RecommendationService, RecommendationController] =
+  lazy val live: URLayer[RecommendationService, RecommendationController] =
     ZLayer.fromFunction(RecommendationControllerImpl.apply)
 }

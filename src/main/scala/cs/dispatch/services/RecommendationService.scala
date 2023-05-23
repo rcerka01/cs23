@@ -12,16 +12,21 @@ import zio.json.*
 import cats.implicits.*
 import cats.data.*
 import cats.data.Validated.{Invalid, Valid}
-import cs.dispatch.controllers.responses.{CSCardResponse, CSCardResponseError, ScoredCardResponse, ScoredCardResponseError}
+import cs.dispatch.controllers.responses.{
+  CSCardResponse,
+  CSCardResponseError,
+  ScoredCardResponse,
+  ScoredCardResponseError
+}
 import cs.dispatch.domain.{Recommendation, User}
 
 trait RecommendationService {
   def getRecommendations(
       user: User
-  ): ZIO[AppConfig, Throwable, List[Recommendation]]
+  ): Task[List[Recommendation]]
 }
 
-final case class RecommendationServiceImpl(appConfig: AppConfig)
+private final case class RecommendationServiceImpl(appConfig: AppConfig)
     extends RecommendationService {
 
   private def callUpstream(
@@ -79,7 +84,7 @@ final case class RecommendationServiceImpl(appConfig: AppConfig)
 
   def getRecommendations(
       user: User
-  ): ZIO[AppConfig, Throwable, List[Recommendation]] = {
+  ): Task[List[Recommendation]] = {
     val csCardConfig = appConfig.upstreamResponse.callTypes.head
     val scoredCardConfig = appConfig.upstreamResponse.callTypes.tail.head
 
@@ -162,6 +167,6 @@ final case class RecommendationServiceImpl(appConfig: AppConfig)
 }
 
 object RecommendationService {
-  def live: ZLayer[AppConfig, ConfigError, RecommendationServiceImpl] =
+  lazy val live: URLayer[AppConfig, RecommendationServiceImpl] =
     ZLayer.fromFunction(RecommendationServiceImpl.apply)
 }
