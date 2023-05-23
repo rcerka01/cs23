@@ -6,7 +6,7 @@ import zio.*
 case class UpstreamResponseConfig(callTypes: List[Call])
 
 case class Call(
-    callType: String,
+    callType: CallType,
     providerName: String,
     path: String,
     timeout: Duration,

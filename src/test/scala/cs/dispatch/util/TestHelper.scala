@@ -7,6 +7,7 @@ import cs.dispatch.config.{
   ZioHttpConfig
 }
 import cs.dispatch.controllers.{RecommendationController, UpstreamController}
+import cs.dispatch.services.CallType
 import zio.*
 
 object TestHelper {
@@ -105,14 +106,14 @@ object TestHelper {
   val testPort = 9000
   val zioHttpConfig: ZioHttpConfig = ZioHttpConfig(testHost, testPort)
   val call1: Call = Call(
-    "cards",
+    CallType.Cards,
     "CSCards",
     "/app.clearscore.com/api/global/backend-tech-test/v1/cards",
     1.seconds,
     csCardsResponse
   )
   val call2: Call = Call(
-    "creditcards",
+    CallType.CreditCards,
     "ScoredCards",
     "/app.clearscore.com/api/global/backend-tech-test/v2/creditcards",
     1.seconds,

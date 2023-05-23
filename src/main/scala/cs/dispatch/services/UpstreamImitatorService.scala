@@ -17,7 +17,7 @@ final private case class UpstreamImitatorServiceImpl(appConfig: AppConfig)
   extends UpstreamImitatorService {
 
   def cardImitator(callType: CallType): IO[ConfigError, String] = {
-    appConfig.upstreamResponse.callTypes.find(_.callType.equals(callType.toString.toLowerCase())) match {
+    appConfig.upstreamResponse.callTypes.find(_.callType.equals(callType)) match {
       case Some(config) => ZIO.succeed(config.response.stripMargin)
       case _ =>
         ZIO.logError("Service failed due missing config") *>
