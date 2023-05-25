@@ -9,10 +9,8 @@ lazy val root = (project in file("."))
     libraryDependencies ++= Seq(
       "org.typelevel" %% "cats-core" % "2.9.0",
       "dev.zio" %% "zio" % "2.0.10",
-      "dev.zio" %% "zio-streams" % "2.0.10",
       "dev.zio" %% "zio-json" % "0.4.2",
       "dev.zio" %% "zio-logging" % "2.1.11",
-      "dev.zio" %% "zio-config" % "3.0.7",
       "dev.zio" %% "zio-config-magnolia" % "3.0.7",
       "dev.zio" %% "zio-config-typesafe" % "3.0.7",
       "dev.zio" %% "zio-logging" % "2.1.11",

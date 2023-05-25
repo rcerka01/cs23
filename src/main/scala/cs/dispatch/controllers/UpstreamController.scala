@@ -27,11 +27,17 @@ private final case class UpstreamControllerImpl(
       case req @ Method.GET -> !! / "app.clearscore.com" / "api" / "global" / "backend-tech-test" / "v1" / "cards" =>
         upstreamService
           .cardImitator(CallType.Cards)
-          .fold(e => Response.fromHttpError(toHttpError(e)), Response.json)
+          .fold(
+            e => Response.fromHttpError(toHttpError(e).errorResponse),
+            Response.json
+          )
       case req @ Method.GET -> !! / "app.clearscore.com" / "api" / "global" / "backend-tech-test" / "v2" / "creditcards" =>
         upstreamService
           .cardImitator(CallType.CreditCards)
-          .fold(e => Response.fromHttpError(toHttpError(e)), Response.json)
+          .fold(
+            e => Response.fromHttpError(toHttpError(e).errorResponse),
+            Response.json
+          )
     }
 
   override def create(): App[Any] = upstreamApp

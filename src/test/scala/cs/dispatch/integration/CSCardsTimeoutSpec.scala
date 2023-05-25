@@ -44,8 +44,12 @@ object CSCardsTimeoutSpec extends ZIOSpecDefault {
 
       val expectedResp = Response(
         status = Status.Ok,
-        headers = Headers("content-type", "application/json"),
-        body = Body.fromString(csCardsResponse)
+        headers = Headers(
+          List(
+            Header.ContentLength(85),
+            Header.Custom("Content-Type", "application/json")
+          )
+        ),        body = Body.fromString(csCardsResponse)
       )
 
       val request = Request(

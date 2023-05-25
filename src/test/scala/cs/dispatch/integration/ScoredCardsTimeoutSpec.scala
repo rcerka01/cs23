@@ -1,7 +1,6 @@
 package cs.dispatch.integration
 
 import cs.dispatch.util.TestHelper.*
-
 import cs.dispatch.config.{AppConfig, Config, UpstreamResponseConfig}
 import cs.dispatch.controllers.{RecommendationController, UpstreamController}
 import cs.dispatch.services.{RecommendationService, UpstreamImitatorService}
@@ -15,6 +14,8 @@ import org.mockserver.client.MockServerClient
 import org.mockserver.integration.ClientAndServer
 import org.mockserver.model.HttpRequest
 import org.mockserver.model.HttpResponse
+import sttp.model.HeaderNames.ContentLength
+import zio.http.Header.Custom
 
 object ScoredCardsTimeoutSpec extends ZIOSpecDefault {
 
@@ -44,7 +45,12 @@ object ScoredCardsTimeoutSpec extends ZIOSpecDefault {
 
       val expectedResp = Response(
         status = Status.Ok,
-        headers = Headers("content-type", "application/json"),
+        headers = Headers(
+          List(
+            Header.ContentLength(157),
+            Header.Custom("Content-Type", "application/json")
+          )
+        ),
         body = Body.fromString(csCardsResponse)
       )
 
@@ -60,6 +66,7 @@ object ScoredCardsTimeoutSpec extends ZIOSpecDefault {
       for {
         app <- ZIO.serviceWith[RecommendationController](_.create())
         response <- app.runZIO(request)
+        _ <- ZIO.logError(" xxxx " + response.headers.toString())
         body <- response.body.asString
       } yield {
         val bodyStrip = body.replaceAll(" ", "")
