@@ -3,7 +3,18 @@ package cs.dispatch.integration
 import cs.dispatch.config.{AppConfig, Config}
 import cs.dispatch.controllers.{RecommendationController, UpstreamController}
 import cs.dispatch.services.{RecommendationService, UpstreamImitatorService}
-import zio.http.{!!, Body, Header, Headers, Method, Request, Response, Status, URL, Version}
+import zio.http.{
+  !!,
+  Body,
+  Header,
+  Headers,
+  Method,
+  Request,
+  Response,
+  Status,
+  URL,
+  Version
+}
 import zio.*
 import zio.test.{TestAspect, TestClock, ZIOSpecDefault, assertTrue}
 import cs.dispatch.util.TestHelper.*
@@ -45,7 +56,8 @@ object RecommendationsSpec extends ZIOSpecDefault {
             Header.ContentLength(241),
             Header.Custom("Content-Type", "application/json")
           )
-        ),        body = Body.fromString(testResponse)
+        ),
+        body = Body.fromString(testResponse)
       )
 
       val request = Request(

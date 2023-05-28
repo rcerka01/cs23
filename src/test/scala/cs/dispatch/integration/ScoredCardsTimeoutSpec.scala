@@ -66,7 +66,6 @@ object ScoredCardsTimeoutSpec extends ZIOSpecDefault {
       for {
         app <- ZIO.serviceWith[RecommendationController](_.create())
         response <- app.runZIO(request)
-        _ <- ZIO.logError(" xxxx " + response.headers.toString())
         body <- response.body.asString
       } yield {
         val bodyStrip = body.replaceAll(" ", "")

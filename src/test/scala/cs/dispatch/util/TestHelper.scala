@@ -4,7 +4,8 @@ import cs.dispatch.config.{
   AppConfig,
   Call,
   UpstreamResponseConfig,
-  ZioHttpConfig
+  ZioHttpConfig,
+  OpenApi
 }
 import cs.dispatch.controllers.{RecommendationController, UpstreamController}
 import cs.dispatch.services.CallType
@@ -122,5 +123,9 @@ object TestHelper {
   val upstreamResponseConfig: UpstreamResponseConfig = UpstreamResponseConfig(
     List(call1, call2)
   )
-  val appConfig: AppConfig = AppConfig(zioHttpConfig, upstreamResponseConfig)
+  val appConfig: AppConfig = AppConfig(
+    zioHttpConfig,
+    upstreamResponseConfig,
+    OpenApi("test", "1.0", "test.yaml")
+  )
 }

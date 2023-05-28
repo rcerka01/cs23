@@ -9,7 +9,11 @@ import zio.config.*
 import cs.dispatch.config.Config
 import cs.dispatch.Main.validateEnv
 import cs.dispatch.controllers.{RecommendationController, UpstreamController}
-import cs.dispatch.services.{OpenApiService, RecommendationService, UpstreamImitatorService}
+import cs.dispatch.services.{
+  OpenApiService,
+  RecommendationService,
+  UpstreamImitatorService
+}
 import sttp.tapir.swagger.bundle.SwaggerInterpreter
 import sttp.tapir.docs.openapi.OpenAPIDocsInterpreter
 import java.io.{BufferedWriter, File}

@@ -11,16 +11,13 @@ import zio.json.*
 import cs.dispatch.Main.validateEnv
 import cs.dispatch.domain.HttpErrorHandler.toHttpError
 import cs.dispatch.domain.{Recommendation, User}
-import io.circe.generic.semiauto.{deriveDecoder, deriveEncoder}
-import io.circe.{Decoder, Encoder}
-import magnolia1.Monadic.map
+import sttp.model.StatusCode
+import sttp.tapir.{Endpoint, EndpointInfo, PublicEndpoint}
+import sttp.tapir.server.ziohttp.ZioHttpInterpreter
 import sttp.model.StatusCode
 import sttp.tapir.json.circe.jsonBody
-import sttp.tapir.{Endpoint, PublicEndpoint}
 import sttp.tapir.ztapir.*
 import sttp.tapir.server.ziohttp.ZioHttpInterpreter
-import zio.http.{HttpApp, Request, Response}
-import zio.*
 import sttp.tapir.generic.auto.*
 
 trait RecommendationController {
@@ -39,15 +36,16 @@ private final case class RecommendationControllerImpl(
       : Endpoint[Unit, User, StatusCode, List[Recommendation], Any] =
     sttp.tapir.ztapir.endpoint.post
       .in("creditcards")
-      .errorOut(statusCode)
       .in(jsonBody[User])
+      .errorOut(statusCode)
       .out(jsonBody[List[Recommendation]])
-      .description("""
+      .description(
+        """
           |Single endpoint that consumes some
           |information about the user’s financial situation and return credit cards
           |recommended for them.
-          |""".stripMargin)
-
+          |""".stripMargin
+      )
   private val recommendationsTapirApp: App[Any] =
     ZioHttpInterpreter()
       .toHttp(recommendationsEndpoint.zServerLogic { user =>

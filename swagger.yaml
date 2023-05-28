@@ -1,6 +1,6 @@
 openapi: 3.0.3
 info:
-  title: Credit cards recommendation App
+  title: Credit cards recommendation y App
   version: '1.0'
 paths:
   /creditcards:

@@ -11,8 +11,7 @@ class ScoredCardResponseError(msg: String) extends Exception(msg)
 object ScoredCardResponse {
   given decoder: JsonDecoder[ScoredCardResponse] = DeriveJsonDecoder.gen[ScoredCardResponse]
   given encoder: JsonEncoder[ScoredCardResponse] = DeriveJsonEncoder.gen[ScoredCardResponse]
-
-
+  
   private def mustHasCorrectApr(apr: Double): Validated[NonEmptyList[ScoredCardResponseError], Double] = {
     if (apr < 0) ScoredCardResponseError(s"Scored card apr value of $apr is smaller than 0. Item eliminated.").invalidNel
     else if (apr > 100) ScoredCardResponseError(s"Scored card apr value of $apr is greater than 100. Item eliminated.").invalidNel

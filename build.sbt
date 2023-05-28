@@ -15,9 +15,9 @@ lazy val root = (project in file("."))
       "dev.zio" %% "zio-config-typesafe" % "3.0.7",
       "dev.zio" %% "zio-logging" % "2.1.11",
       "dev.zio" %% "zio-http" % "3.0.0-RC1",
-      "com.softwaremill.sttp.tapir" %% "tapir-core" % "1.3.0",
-      "com.softwaremill.sttp.tapir" %% "tapir-zio-http-server" % "1.3.0",
-      "com.softwaremill.sttp.tapir" %% "tapir-json-circe" % "1.3.0",
+      "com.softwaremill.sttp.tapir" %% "tapir-core" % "1.4.0",
+      "com.softwaremill.sttp.tapir" %% "tapir-zio-http-server" % "1.4.0",
+      "com.softwaremill.sttp.tapir" %% "tapir-json-circe" % "1.4.0",
       "com.softwaremill.sttp.tapir" %% "tapir-swagger-ui-bundle" % "1.4.0",
       "org.mock-server" % "mockserver-netty" % "5.14.0" % Test,
       "dev.zio" %% "zio-test" % "2.0.10" % Test,
@@ -25,8 +25,5 @@ lazy val root = (project in file("."))
     ),
     testFrameworks += new TestFramework("zio.test.sbt.ZTestFramework")
   )
-
-enablePlugins(OpenapiCodegenPlugin)
-openapiSwaggerFile := baseDirectory.value / "swagger.yaml"
 
 testOptions += Tests.Argument(TestFrameworks.ScalaTest, "-oD", "-z", "zio")
