@@ -4,5 +4,6 @@ import zio.ZLayer
 
 final case class AppConfig(
     zioHttp: ZioHttpConfig,
-    upstreamResponse: UpstreamResponseConfig
+    upstreamResponse: UpstreamResponseConfig,
+    openApi: OpenApi
 )

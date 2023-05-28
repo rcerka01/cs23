@@ -1,0 +1,71 @@
+openapi: 3.0.3
+info:
+  title: Credit cards recommendation App
+  version: '1.0'
+paths:
+  /creditcards:
+    post:
+      description: |2
+
+        Single endpoint that consumes some
+        information about the user’s financial situation and return credit cards
+        recommended for them.
+      operationId: postCreditcards
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+        required: true
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Recommendation'
+        '400':
+          description: 'Invalid value for: body'
+          content:
+            text/plain:
+              schema:
+                type: string
+        default:
+          description: ''
+components:
+  schemas:
+    Recommendation:
+      required:
+      - provider
+      - name
+      - apr
+      - cardScore
+      type: object
+      properties:
+        provider:
+          type: string
+        name:
+          type: string
+        apr:
+          type: number
+          format: double
+        cardScore:
+          type: number
+          format: double
+    User:
+      required:
+      - name
+      - creditScore
+      - salary
+      type: object
+      properties:
+        name:
+          type: string
+        creditScore:
+          type: integer
+          format: int32
+        salary:
+          type: integer
+          format: int32

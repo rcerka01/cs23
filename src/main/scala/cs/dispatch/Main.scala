@@ -4,7 +4,7 @@ import cs.dispatch.Main.Environment
 import cs.dispatch.config.{AppConfig, Config, ZioHttpConfig}
 import cs.dispatch.controllers.{RecommendationController, UpstreamController}
 import cs.dispatch.servers.HttpServer
-import cs.dispatch.services.{RecommendationService, UpstreamImitatorService}
+import cs.dispatch.services.{OpenApiService, RecommendationService, UpstreamImitatorService}
 import zio.*
 import zio.Console.printLine
 
@@ -29,7 +29,8 @@ object Main extends ZIOAppDefault {
         UpstreamImitatorService.live,
         UpstreamController.live,
         RecommendationController.live,
-        RecommendationService.live
+        RecommendationService.live,
+        OpenApiService.live
       )
   }
 }

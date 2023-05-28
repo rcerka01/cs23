@@ -11,6 +11,7 @@ class ConfigError(msg: String) extends Exception(msg)
 
 val zioHttpConfigDescriptor = descriptor[ZioHttpConfig].mapKey(toKebabCase)
 val upstreamResponseDescriptor = descriptor[UpstreamResponseConfig].mapKey(toKebabCase)
+val openApiDescriptor = descriptor[OpenApi].mapKey(toKebabCase)
 val appConfigDescriptor = descriptor[AppConfig].mapKey(toKebabCase)
 
 object Config {

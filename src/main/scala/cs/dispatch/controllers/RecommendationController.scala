@@ -16,15 +16,17 @@ import io.circe.{Decoder, Encoder}
 import magnolia1.Monadic.map
 import sttp.model.StatusCode
 import sttp.tapir.json.circe.jsonBody
-import sttp.tapir.PublicEndpoint
-import sttp.tapir.ztapir._
+import sttp.tapir.{Endpoint, PublicEndpoint}
+import sttp.tapir.ztapir.*
 import sttp.tapir.server.ziohttp.ZioHttpInterpreter
 import zio.http.{HttpApp, Request, Response}
-import zio._
-import sttp.tapir.generic.auto._
+import zio.*
+import sttp.tapir.generic.auto.*
 
 trait RecommendationController {
   def create(): App[Any]
+  def endpointsForDocs()
+      : Endpoint[Unit, User, StatusCode, List[Recommendation], Any]
 }
 
 class UserResponseError(msg: String) extends Exception(msg)
@@ -33,16 +35,17 @@ private final case class RecommendationControllerImpl(
     recommendationService: RecommendationService
 ) extends RecommendationController {
 
-  val recommendationsEndpoint =
+  private val recommendationsEndpoint
+      : Endpoint[Unit, User, StatusCode, List[Recommendation], Any] =
     sttp.tapir.ztapir.endpoint.post
       .in("creditcards")
       .errorOut(statusCode)
       .in(jsonBody[User])
       .out(jsonBody[List[Recommendation]])
       .description("""
-          |single endpoint that consumes some
+          |Single endpoint that consumes some
           |information about the user’s financial situation and return credit cards
-          |recommended for them
+          |recommended for them.
           |""".stripMargin)
 
   private val recommendationsTapirApp: App[Any] =
@@ -69,8 +72,11 @@ private final case class RecommendationControllerImpl(
   //        .catchAll(e => ZIO.succeed(Response.fromHttpError(toHttpError(e))))
   //    }
 
-  override def create(): App[Any] =
-    recommendationsTapirApp //++ recommendationsApp ++ countCharactersHttp
+  override def create(): App[Any] = recommendationsTapirApp
+
+  override def endpointsForDocs()
+      : Endpoint[Unit, User, StatusCode, List[Recommendation], Any] =
+    recommendationsEndpoint
 }
 
 object RecommendationController {
