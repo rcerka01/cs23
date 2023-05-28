@@ -2,7 +2,8 @@ ensime-langserver.log
 pc.stdout.log
 scalavista-vscode.log
 target
-project
+project/project
+project/target
 .vscode
 .metals
 .idea
