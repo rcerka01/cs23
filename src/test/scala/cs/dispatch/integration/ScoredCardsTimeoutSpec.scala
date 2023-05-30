@@ -79,7 +79,7 @@ object ScoredCardsTimeoutSpec extends ZIOSpecDefault {
       }
     }
   ).provide(
-    ZLayer.succeed(appConfig.copy(zioHttp = zioHttpConfig.copy(port = 9002))),
+    ZLayer.succeed(appConfig.copy(httpPort= 9002)),
     RecommendationService.live,
     RecommendationController.live
   )

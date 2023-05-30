@@ -34,7 +34,7 @@ case class HttpServerImpl(
     Server
       .serve(upstreamController.create() ++ recommendationController.create())
       .provide(
-        Server.defaultWithPort(appConfig.zioHttp.port)
+        Server.defaultWithPort(appConfig.httpPort)
       )
 }
 

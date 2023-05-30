@@ -33,7 +33,7 @@ private final case class RecommendationServiceImpl(appConfig: AppConfig)
       path: String,
       timeout: Duration
   ): ZIO[Client, Throwable, String] = {
-    val port = appConfig.zioHttp.port
+    val port = appConfig.httpPort
     val host = appConfig.zioHttp.host
     SimpleHttpClient.callHttp(port, host, path, Method.GET, timeout)
   }
@@ -91,11 +91,11 @@ private final case class RecommendationServiceImpl(appConfig: AppConfig)
     (for {
       // fibers or better with mapN ???
       cardResponseFiber <- callUpstream(
-        csCardConfig.path,
+        appConfig.cscardsEndpoint,
         csCardConfig.timeout
       ).fork
       creditCardResponseFiber <- callUpstream(
-        scoredCardConfig.path,
+        appConfig.scoredcardsEndpoint,
         scoredCardConfig.timeout
       ).fork
       zippedResponse = cardResponseFiber.zip(creditCardResponseFiber)

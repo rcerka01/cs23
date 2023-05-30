@@ -105,18 +105,16 @@ object TestHelper {
 
   val testHost = "localhost"
   val testPort = 9000
-  val zioHttpConfig: ZioHttpConfig = ZioHttpConfig(testHost, testPort)
+  val zioHttpConfig: ZioHttpConfig = ZioHttpConfig(testHost)
   val call1: Call = Call(
     CallType.Cards,
     "CSCards",
-    "/app.clearscore.com/api/global/backend-tech-test/v1/cards",
     1.seconds,
     csCardsResponse
   )
   val call2: Call = Call(
     CallType.CreditCards,
     "ScoredCards",
-    "/app.clearscore.com/api/global/backend-tech-test/v2/creditcards",
     1.seconds,
     scoredCardsResponse
   )
@@ -126,6 +124,9 @@ object TestHelper {
   val appConfig: AppConfig = AppConfig(
     zioHttpConfig,
     upstreamResponseConfig,
-    OpenApi("test", "1.0", "test.yaml")
+    OpenApi("test", "1.0", "test.yaml"),
+    testPort,
+    "/app.clearscore.com/api/global/backend-tech-test/v1/cards",
+    "/app.clearscore.com/api/global/backend-tech-test/v2/creditcards"
   )
 }

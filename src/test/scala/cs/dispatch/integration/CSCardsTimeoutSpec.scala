@@ -49,7 +49,8 @@ object CSCardsTimeoutSpec extends ZIOSpecDefault {
             Header.ContentLength(85),
             Header.Custom("Content-Type", "application/json")
           )
-        ),        body = Body.fromString(csCardsResponse)
+        ),
+        body = Body.fromString(csCardsResponse)
       )
 
       val request = Request(
@@ -75,7 +76,7 @@ object CSCardsTimeoutSpec extends ZIOSpecDefault {
       }
     }
   ).provide(
-    ZLayer.succeed(appConfig.copy(zioHttp = zioHttpConfig.copy(port = 9001))),
+    ZLayer.succeed(appConfig.copy(httpPort = 9001)),
     RecommendationService.live,
     RecommendationController.live
   )
